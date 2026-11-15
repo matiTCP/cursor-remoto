@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0a0908" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-180.png?v=2" />
+  <link rel="icon" href="icon-192.png?v=2" sizes="192x192" />
+  <title>Mouse Final</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-tab="mouse">
+  <header id="statusBar" class="caution">
+    <svg id="statusEcg" viewBox="0 0 72 24" width="56" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12h13l3-7 4 14 3-7h6l3-5 4 10 3-5h29" />
+    </svg>
+    <span id="statusText">Buscando señal…</span>
+  </header>
+
+  <main id="app">
+    <!-- Panel: Mouse -->
+    <section class="panel active" data-panel="mouse">
+      <div id="trackpad" aria-label="Trackpad">
+        <span id="trackpadLabel">TRACKPAD</span>
+        <p id="trackpadHint">Un dedo mueve · toque = clic izq.<br />Dos dedos = clic der. / scroll</p>
+      </div>
+      <div class="button-grid three" id="mouseButtons"></div>
+    </section>
+
+    <!-- Panel: Multimedia -->
+    <section class="panel" data-panel="multimedia">
+      <div class="panel-spacer"></div>
+      <div class="button-grid two big" id="multimediaButtons"></div>
+
+      <div class="glass-card">
+        <h2 class="card-title"><img class="card-icon" src="img/re/spray.png" alt="" />Volumen</h2>
+        <input id="volumeSlider" type="range" min="0" max="100" value="50" class="slider" />
+        <p class="hint">Desliza para subir o bajar. Es a ojo: no puedo leer el volumen real del sistema, pero funciona. Confía en mí.<span class="sign">— Barry Burton</span></p>
+      </div>
+
+      <figure class="dossier framed">
+        <img src="img/claire.webp" alt="" />
+        <figcaption>Archivo 01 · Redfield, C.</figcaption>
+      </figure>
+    </section>
+
+    <!-- Panel: Atajos -->
+    <section class="panel" data-panel="atajos">
+      <div class="panel-spacer"></div>
+      <div class="button-grid two" id="atajosButtons"></div>
+
+      <div class="glass-card" id="clipCard">
+        <h2 class="card-title">
+          <!-- Baúl de objetos, como el de las salas de guardado -->
+          <svg class="card-icon" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M4 14 Q4 6 16 6 Q28 6 28 14 Z" fill="#6b3d1c" stroke="#1a0f08" stroke-width="1.4"/>
+            <rect x="4" y="14" width="24" height="13" fill="#7a4a22" stroke="#1a0f08" stroke-width="1.4"/>
+            <path d="M9 7.5 V27 M23 7.5 V27" stroke="#c9922a" stroke-width="2"/>
+            <path d="M4 14 H28" stroke="#1a0f08" stroke-width="1.4"/>
+            <rect x="13.5" y="12" width="5" height="6" rx="1" fill="#ded6c8" stroke="#1a0f08" stroke-width="1"/>
+            <circle cx="16" cy="15" r="1" fill="#1a0f08"/>
+          </svg>
+          Baúl de copiados
+        </h2>
+
+        <div class="clip-add">
+          <textarea id="clipNew" rows="1" placeholder="¿Qué vas a guardar, extranjero?" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+          <button id="clipSave" class="btn-accent">Guardar</button>
+        </div>
+
+        <ul id="clipList" class="clip-list"></ul>
+        <p id="clipEmpty" class="hint clip-empty">Aún no tienes nada guardado, extranjero. Copia algo en el PC (Ctrl+C o el botón Copiar de arriba) y aparecerá aquí.</p>
+
+        <button id="clipClear" class="btn-danger" hidden>Vaciar baúl</button>
+        <p class="hint">¡Bienvenido! Todo lo que copies en el PC, yo te lo guardo. <strong>Pegar</strong> lo deja donde esté el cursor. Lo que fijes queda arriba, en ámbar, y no me lo llevo cuando vacías el baúl. ¡Je, je, je!<span class="sign">— El Buhonero</span></p>
+      </div>
+
+      <figure class="dossier framed">
+        <img src="img/grace.jpg" alt="" style="object-position: 62% 40%;" />
+        <figcaption>Archivo 03 · Ashcroft, G.</figcaption>
+      </figure>
+    </section>
+
+    <!-- Panel: Navegación -->
+    <section class="panel" data-panel="navegacion">
+      <div class="panel-spacer"></div>
+      <div class="button-grid two" id="navChips"></div>
+      <div class="dpad">
+        <button class="dpad-btn" data-area="up" data-code="UP"></button>
+        <button class="dpad-btn" data-area="left" data-code="LEFT"></button>
+        <button class="dpad-btn center" data-area="center" data-code="ENTER">OK</button>
+        <button class="dpad-btn" data-area="right" data-code="RIGHT"></button>
+        <button class="dpad-btn" data-area="down" data-code="DOWN"></button>
+      </div>
+
+      <div class="relics" aria-hidden="true">
+        <img src="img/re/crest-star.png" alt="" />
+        <img src="img/re/crest-moon.png" alt="" />
+        <img src="img/re/crest-sun.png" alt="" />
+        <img src="img/re/crest-wind.png" alt="" />
+      </div>
+
+      <div class="portraits" aria-hidden="true">
+        <figure class="portrait framed">
+          <img src="img/ada.jpg" alt="" style="object-position: 52% 42%;" />
+          <figcaption>Wong, A.</figcaption>
+        </figure>
+        <figure class="portrait framed">
+          <img src="img/ashley.jpg" alt="" style="object-position: 48% 38%;" />
+          <figcaption>Graham, A.</figcaption>
+        </figure>
+        <figure class="portrait framed">
+          <img src="img/chris.jpg" alt="" style="object-position: 52% 36%;" />
+          <figcaption>Redfield, C.</figcaption>
+        </figure>
+      </div>
+
+      <figure class="dossier framed">
+        <img src="img/rpd.png" alt="" />
+        <figcaption>Archivo 02 · R.P.D. — Raccoon City</figcaption>
+      </figure>
+    </section>
+
+    <!-- Panel: Sistema -->
+    <section class="panel" data-panel="sistema">
+      <div class="panel-spacer"></div>
+      <div class="glass-card" id="shutdownCard">
+        <h2 class="card-title"><img class="card-icon" src="img/re/ink-ribbon.png" alt="" />Autodestrucción · Apagado</h2>
+
+        <div id="shutdownStatus" class="shutdown-status">Secuencia inactiva</div>
+
+        <div class="chip-row" id="presetChips">
+          <button class="chip" data-min="15">15 min</button>
+          <button class="chip" data-min="30">30 min</button>
+          <button class="chip" data-min="45">45 min</button>
+          <button class="chip" data-min="60">1 h</button>
+          <button class="chip" data-min="90">1 h 30</button>
+        </div>
+
+        <div class="shutdown-row">
+          <input id="customMinutes" type="number" min="1" max="1440" placeholder="Minutos" />
+          <button id="scheduleCustom" class="btn-accent">Activar</button>
+        </div>
+
+        <div class="shutdown-row">
+          <input id="customTime" type="time" />
+          <button id="scheduleAtTime" class="btn-accent">A esa hora</button>
+        </div>
+
+        <button id="cancelShutdown" class="btn-danger" hidden>Abortar secuencia</button>
+      </div>
+
+      <div class="glass-card">
+        <h2 class="card-title"><img class="card-icon" src="img/re/lighter.png" alt="" />Brillo de pantalla</h2>
+        <input id="brightnessSlider" type="range" min="0" max="100" value="70" class="slider" />
+        <p class="hint">Si tu monitor o TV soporta DDC/CI por HDMI, esto funciona. Si mueves el slider y no pasa nada… no es la app. Es tu pantalla.<span class="sign">— Leon S. Kennedy</span></p>
+      </div>
+
+      <div class="glass-card">
+        <h2 class="card-title"><img class="card-icon" src="img/re/vial-purple.png" alt="" />Sonidos</h2>
+        <div class="sfx-row">
+          <button id="sfxToggle" class="chip sfx-toggle" aria-pressed="true">Activados</button>
+          <input id="sfxVolume" type="range" min="0" max="100" value="70" class="slider" aria-label="Volumen de los sonidos" />
+        </div>
+        <p class="hint">Son los sonidos del inventario. Suenan en el celular, no en el PC, y si el iPhone está en silencio no vas a oír nada. Mantente alerta.<span class="sign">— Jill Valentine</span></p>
+      </div>
+
+      <div class="glass-card">
+        <h2 class="card-title"><img class="card-icon" src="img/re/vial-green.png" alt="" />Tamaño del cursor</h2>
+        <button id="openCursorSettings" class="btn-accent full">Abrir ajustes de cursor en el PC</button>
+        <p class="hint">Windows no deja cambiar el tamaño del cursor a distancia, así que te abro la pantalla de ajustes. Después mueve el slider con el trackpad, sin levantarte de la cama.<span class="sign">— Rebecca Chambers</span></p>
+      </div>
+      <div class="panel-spacer"></div>
+    </section>
+  </main>
+
+  <button id="keyboardFab" aria-label="Abrir teclado">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="6.5" width="19" height="12" rx="2.5"/>
+      <path d="M6 11h.01M9.5 11h.01M13 11h.01M16.5 11h.01M6.5 14.5h11"/>
+    </svg>
+  </button>
+
+  <div id="keyboardPanel" hidden>
+    <div class="glass-card">
+      <p class="hint hint-with-icon" style="margin-top:0">
+        <img class="card-icon" src="img/re/typewriter.png" alt="" />
+        Es una máquina de escribir. Lo que teclees aquí aparece en el PC al instante.
+      </p>
+      <textarea id="hiddenInput" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text" placeholder="Toca aquí para escribir…"></textarea>
+      <div class="keyboard-actions">
+        <button id="backspaceBtn" class="chip">⌫ Borrar</button>
+        <button id="clearAllBtn" class="chip">Borrar todo</button>
+        <button id="closeKeyboard" class="btn-accent">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <nav id="tabBar">
+    <button class="tab-btn active" data-tab="mouse">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 3l6.5 16 2-7 7-2z" fill="currentColor"/></svg>
+      <span>Mouse</span>
+    </button>
+    <button class="tab-btn" data-tab="multimedia">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M7 4l13 8-13 8V4z" fill="currentColor"/></svg>
+      <span>Multimedia</span>
+    </button>
+    <button class="tab-btn" data-tab="navegacion">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M12 3l3 4h-6z"/><path d="M12 21l-3-4h6z"/><path d="M3 12l4-3v6z"/><path d="M21 12l-4 3v-6z"/>
+      </svg>
+      <span>Navegación</span>
+    </button>
+    <button class="tab-btn" data-tab="atajos">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="10" height="10" rx="2"/><rect x="11" y="11" width="10" height="10" rx="2"/>
+      </svg>
+      <span>Atajos</span>
+    </button>
+    <button class="tab-btn" data-tab="sistema">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor"/></svg>
+      <span>Sistema</span>
+    </button>
+  </nav>
+
+  <div id="confirmModal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-window framed">
+      <img class="modal-bg" src="img/zombie.webp" alt="" />
+      <div class="modal-veil"></div>
+      <div class="modal-body">
+        <p class="modal-kicker" id="confirmKicker">Advertencia</p>
+        <h2 class="modal-title" id="confirmTitle">¿Activar la autodestrucción?</h2>
+        <p class="modal-text" id="confirmText"></p>
+        <div class="modal-actions">
+          <button id="confirmCancel" class="chip">No</button>
+          <button id="confirmOk" class="btn-accent">Sí</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pinOverlay">
+    <div id="pinBox">
+      <img id="pinEmblem" src="img/re/umbrella.png" alt="" />
+      <h1>Mouse Final</h1>
+      <p>Sistema de seguridad Umbrella. Ingrese el código de acceso <code>(config.json)</code></p>
+      <input id="pinInput" type="tel" inputmode="numeric" autocomplete="off" placeholder="••••" />
+      <button id="pinSubmit">Verificar</button>
+      <p id="pinError"></p>
+    </div>
+  </div>
+
+  <script src="sfx.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

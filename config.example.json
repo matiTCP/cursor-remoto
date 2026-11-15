@@ -1,0 +1,21 @@
+{
+  "port": 5577,
+  "pin": "1234",
+  "sensitivity": 1.4,
+  "buttons": [
+    { "label": "Play / Pausa", "icon": "play", "category": "multimedia", "action": { "type": "key", "code": "MEDIA_PLAY_PAUSE" } },
+    { "label": "Vol +", "icon": "volume_up", "category": "multimedia", "repeat": true, "action": { "type": "key", "code": "VOLUME_UP" } },
+    { "label": "Vol -", "icon": "volume_down", "category": "multimedia", "repeat": true, "action": { "type": "key", "code": "VOLUME_DOWN" } },
+    { "label": "Silenciar", "icon": "mute", "category": "multimedia", "action": { "type": "key", "code": "VOLUME_MUTE" } },
+    { "label": "Esc", "icon": "esc", "category": "navegacion", "action": { "type": "key", "code": "ESCAPE" } },
+    { "label": "Pantalla completa", "icon": "fullscreen", "category": "navegacion", "action": { "type": "key", "code": "F" } },
+    { "label": "Click rueda", "icon": "middle_click", "category": "mouse", "action": { "type": "click", "button": "middle" } },
+    { "label": "Atrás", "icon": "back", "category": "mouse", "action": { "type": "click", "button": "x1" } },
+    { "label": "Adelante", "icon": "forward", "category": "mouse", "action": { "type": "click", "button": "x2" } },
+    { "label": "Alt + Tab", "icon": "switch", "category": "atajos", "action": { "type": "key", "code": "ALT+TAB" } },
+    { "label": "Tecla Windows", "icon": "windows", "category": "atajos", "action": { "type": "key", "code": "WIN" } },
+    { "label": "Copiar", "icon": "copy", "category": "atajos", "action": { "type": "key", "code": "CTRL+C" } },
+    { "label": "Pegar", "icon": "paste", "category": "atajos", "action": { "type": "key", "code": "CTRL+V" } },
+    { "label": "Refrescar", "icon": "refresh", "category": "atajos", "action": { "type": "key", "code": "F5" } }
+  ]
+}

@@ -1,0 +1,9 @@
+node_modules/
+# Config real con tu PIN; en el repo va config.example.json
+config.json
+# Estado local del apagado programado
+.shutdown-state.json
+# Logs y basura del sistema
+*.log
+Thumbs.db
+desktop.ini
