@@ -2,6 +2,12 @@
 
 Control remoto personal de mouse y teclado para tu PC con Windows desde el celular, pensado para usar el PC como "tele" desde la cama.
 
+<p align="center">
+  <img src="docs/screenshots/mouse.jpg" width="250" alt="Pestaña Mouse: trackpad táctil con botones de clic de rueda, atrás y adelante" />
+  <img src="docs/screenshots/portapapeles.jpg" width="250" alt="Pestaña Atajos: atajos de teclado e historial del portapapeles" />
+  <img src="docs/screenshots/sistema.jpg" width="250" alt="Pestaña Sistema: apagado automático con cuenta regresiva, brillo y sonidos" />
+</p>
+
 ## Cómo funciona
 
 - Un servidor Node.js (`server.js`) corre en tu PC y expone una página web + WebSocket en tu red local.
