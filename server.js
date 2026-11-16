@@ -23,7 +23,21 @@ function loadConfig() {
 
 // --- App web ---
 const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
+const PUBLIC_DIR = path.join(__dirname, 'public');
+
+// Temas: una carpeta themes/<nombre>/ con los archivos que cambian (index.html,
+// style.css, theme.js, imágenes…). Lo que no traiga se toma de public/.
+// Con "theme": "<nombre>" en config.json, ese tema se sirve en "/";
+// la versión base queda siempre disponible en "/base/".
+const themeName = String(loadConfig().theme || '').replace(/[^\w-]/g, '');
+const themeDir = themeName && path.join(__dirname, 'themes', themeName);
+const hasTheme = Boolean(themeDir && fs.existsSync(themeDir));
+
+// Sin la barra final, las rutas relativas (style.css, app.js…) se pedirían en "/".
+app.get(/^\/base$/, (req, res) => res.redirect('/base/'));
+app.use('/base', express.static(PUBLIC_DIR));
+if (hasTheme) app.use(express.static(themeDir));
+app.use(express.static(PUBLIC_DIR));
 
 // El cliente pide su configuracion (botones, sensibilidad) sin el PIN.
 app.get('/api/config', (req, res) => {
@@ -126,7 +140,7 @@ function scheduleShutdown(seconds, isRetry) {
         return;
       }
       console.error('No se pudo programar el apagado:', err.message);
-      broadcastShutdownStatus('Falla en la secuencia. Inténtalo de nuevo.');
+      broadcastShutdownStatus('No se pudo programar el apagado. Inténtalo de nuevo.');
       return;
     }
     shutdownAt = Date.now() + clamped * 1000;
@@ -348,10 +362,12 @@ server.listen(PORT, () => {
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {
       if (net.family === 'IPv4' && !net.internal) {
-        console.log(`  -> Abri desde el celular (misma red WiFi): http://${net.address}:${PORT}`);
+        console.log(`  -> Abre desde el celular (misma red WiFi): http://${net.address}:${PORT}`);
+        if (hasTheme) console.log(`     Tema "${themeName}" en "/", versión base en http://${net.address}:${PORT}/base/`);
       }
     }
   }
+  if (themeName && !hasTheme) console.log(`  (No existe themes/${themeName}/: se usa la versión base)`);
 });
 
 process.on('SIGINT', () => {

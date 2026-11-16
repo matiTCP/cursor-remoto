@@ -68,6 +68,7 @@
   const sfxToggle = document.getElementById('sfxToggle');
   const sfxVolume = document.getElementById('sfxVolume');
   const sfx = (name) => window.SFX && window.SFX.play(name);
+  const T = window.THEME; // textos del tema (theme.js)
 
   let ws = null;
   let authed = false;
@@ -125,7 +126,7 @@
     });
   });
 
-  // Estado de conexión al estilo Resident Evil: fine / caution / danger.
+  // Estado de conexión: fine (verde) / caution (ámbar) / danger (rojo).
   function setStatus(state, text) {
     statusBar.classList.remove('fine', 'caution', 'danger');
     statusBar.classList.add(state);
@@ -144,12 +145,12 @@
     ws = new WebSocket(`${proto}://${location.host}/ws`);
 
     ws.addEventListener('open', () => {
-      setStatus('caution', 'Caution · Verificando…');
+      setStatus('caution', T.status.verifying);
       const pin = pendingPin || getStoredPin();
       if (pin) {
         ws.send(JSON.stringify({ type: 'auth', pin }));
       } else {
-        setStatus('caution', 'Caution · Identifícate');
+        setStatus('caution', T.status.askPin);
         showPinOverlay();
       }
     });
@@ -165,15 +166,15 @@
             sfx('select');
           }
           pinOverlay.style.display = 'none';
-          setStatus('fine', 'Fine · Enlace establecido');
+          setStatus('fine', T.status.linked);
         } else {
           authed = false;
           pendingPin = null;
           try { localStorage.removeItem('mf_pin'); } catch {}
-          pinError.textContent = 'Código incorrecto. Acceso denegado.';
+          pinError.textContent = T.pinError;
           sfx('error');
           showPinOverlay();
-          setStatus('danger', 'Danger · Acceso denegado');
+          setStatus('danger', T.status.denied);
         }
       } else if (msg.type === 'shutdown') {
         shutdownScheduledAt = msg.scheduledAt;
@@ -185,7 +186,7 @@
 
     ws.addEventListener('close', () => {
       authed = false;
-      setStatus('danger', 'Danger · Sin señal');
+      setStatus('danger', T.status.offline);
       setTimeout(connect, 1500);
     });
 
@@ -316,7 +317,7 @@
     send({ type: 'open', target: 'cursor_settings' });
   });
 
-  // --- Baúl de copiados (historial del portapapeles del PC) ---
+  // --- Historial del portapapeles del PC ---
   const CLIP_ICONS = {
     pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/></svg>',
     del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -401,8 +402,8 @@
   });
 
   clipClear.addEventListener('click', () => {
-    setConfirmText('Me llevo ', 'todo lo que no esté fijado', '. Lo fijado se queda contigo.');
-    openConfirm('¿Vaciar el baúl, extranjero?', () => send({ type: 'clip', action: 'clear' }), 'El Buhonero');
+    setConfirmText(T.clip.clearBefore, T.clip.clearHighlight, T.clip.clearAfter);
+    openConfirm(T.clip.clearTitle, () => send({ type: 'clip', action: 'clear' }), T.clip.clearKicker);
   });
 
   // --- Sonidos de menú ---
@@ -613,7 +614,7 @@
     }
 
     if (!shutdownScheduledAt) {
-      shutdownStatus.textContent = 'Secuencia inactiva';
+      shutdownStatus.textContent = T.shutdown.idle;
       shutdownStatus.classList.remove('active');
       cancelShutdownBtn.hidden = true;
       return;
@@ -625,7 +626,7 @@
     const tick = () => {
       const remainingMs = shutdownScheduledAt - Date.now();
       if (remainingMs <= 0) {
-        shutdownStatus.textContent = 'Evacúe de inmediato';
+        shutdownStatus.textContent = T.shutdown.now;
         clearInterval(countdownTimer);
         countdownTimer = null;
         return;
@@ -635,7 +636,7 @@
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
       const parts = [h, m, s].map((n) => String(n).padStart(2, '0'));
-      shutdownStatus.textContent = `Apagado en ${parts.join(':')}`;
+      shutdownStatus.textContent = `${T.shutdown.countdown} ${parts.join(':')}`;
     };
 
     tick();
@@ -662,7 +663,7 @@
     confirmText.replaceChildren(document.createTextNode(before), strong, document.createTextNode(after));
   }
 
-  function openConfirm(title, action, kicker = 'Sistema de autodestrucción') {
+  function openConfirm(title, action, kicker = T.shutdown.kicker) {
     confirmKicker.textContent = kicker;
     confirmTitle.textContent = title;
     pendingConfirmAction = action;
@@ -682,8 +683,8 @@
 
   function askShutdownConfirm(seconds, detail) {
     if (!seconds || seconds <= 0) return;
-    setConfirmText('El equipo se apagará ', detail || describeDelay(seconds), '. Todo el personal debe evacuar.');
-    openConfirm('¿Activar la autodestrucción?', () => {
+    setConfirmText('El equipo se apagará ', detail || describeDelay(seconds), T.shutdown.scheduleAfter);
+    openConfirm(T.shutdown.scheduleTitle, () => {
       send({ type: 'shutdown', action: 'schedule', seconds });
     });
   }
@@ -696,7 +697,7 @@
     } else {
       setConfirmText('Se cancelará el apagado. ', 'El equipo seguirá encendido', '.');
     }
-    openConfirm('¿Abortar la secuencia?', () => {
+    openConfirm(T.shutdown.cancelTitle, () => {
       send({ type: 'shutdown', action: 'cancel' });
     });
   }

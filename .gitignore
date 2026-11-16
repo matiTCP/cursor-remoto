@@ -7,3 +7,5 @@ config.json
 *.log
 Thumbs.db
 desktop.ini
+# Temas locales (por ejemplo, uno con imágenes que no son tuyas)
+themes/
