@@ -1,0 +1,359 @@
+// App de escritorio: icono en la bandeja + ventana con QR, PIN y opciones.
+// Corre el mismo servidor que `npm start`, pero dentro del proceso de Electron,
+// así el usuario final no necesita instalar Node.js.
+
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const { execFileSync } = require('child_process');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, nativeTheme, clipboard, shell, screen } = require('electron');
+const QRCode = require('qrcode');
+const { MouseServer, lanAddresses } = require('../src/server');
+
+const ROOT_DIR = path.join(__dirname, '..');
+const START_HIDDEN = process.argv.includes('--hidden');
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+  process.exit(0);
+}
+
+let win = null;
+let tray = null;
+let server = null;
+let quitting = false;
+let lastError = null;
+let addresses = [];
+let settingsPath = null;
+let settings = { address: null };
+
+// ---------- Ajustes propios del escritorio (no viajan al celular) ----------
+
+function loadSettings() {
+  try { settings = { ...settings, ...JSON.parse(fs.readFileSync(settingsPath, 'utf-8')) }; } catch {}
+}
+
+function saveSettings() {
+  try { fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2)); } catch {}
+}
+
+// ---------- Migración desde el nombre anterior ("Mouse Final") ----------
+// La primera vez que corre como "Cursor Remoto", trae la configuración, el PIN y
+// los dispositivos emparejados de %APPDATA%\Mouse Final, si existen.
+
+function migrateFromMouseFinal(userData) {
+  const oldDir = path.join(path.dirname(userData), 'Mouse Final');
+  if (oldDir === userData || fs.existsSync(path.join(userData, 'config.json'))) return;
+  for (const file of ['config.json', 'devices.json', 'desktop-settings.json', '.shutdown-state.json']) {
+    try { fs.copyFileSync(path.join(oldDir, file), path.join(userData, file)); } catch {}
+  }
+  // El "Iniciar con Windows" viejo apuntaba al ejecutable anterior: se reemplaza.
+  const runKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+  try {
+    execFileSync('reg', ['query', runKey, '/v', 'MouseFinal'], { stdio: 'ignore', windowsHide: true });
+    execFileSync('reg', ['delete', runKey, '/v', 'MouseFinal', '/f'], { stdio: 'ignore', windowsHide: true });
+    app.setLoginItemSettings({ ...loginItemOptions(), openAtLogin: true });
+  } catch {
+    // No estaba activado.
+  }
+}
+
+// ---------- Inicio con Windows ----------
+// En desarrollo el ejecutable es electron.exe y hay que pasarle la carpeta de la app.
+
+function loginItemOptions() {
+  const args = app.isPackaged ? ['--hidden'] : [app.getAppPath(), '--hidden'];
+  // "name" es el valor en HKCU\...\Run; el desinstalador lo borra con este mismo nombre.
+  return { path: process.execPath, args, name: 'CursorRemoto' };
+}
+
+function autostartEnabled() {
+  return app.getLoginItemSettings(loginItemOptions()).openAtLogin;
+}
+
+// ---------- Estado para la ventana ----------
+
+function currentAddress() {
+  const found = addresses.find((a) => a.address === settings.address);
+  return (found || addresses[0] || {}).address || null;
+}
+
+async function buildState() {
+  const status = server.status();
+  const config = server.loadConfig();
+  const port = status.port || Number(config.port) || 5577;
+  const address = currentAddress();
+  const url = address ? `http://${address}:${port}/` : null;
+  // El QR lleva además un código de emparejamiento: escanearlo deja el celular
+  // conectado sin escribir el PIN. El link de "Copiar" no lo lleva.
+  let qr = null;
+  let pairingExpiresAt = null;
+  if (url && status.running) {
+    const pairing = server.currentPairing();
+    pairingExpiresAt = pairing.expiresAt;
+    qr = await QRCode.toDataURL(`${url}#pair=${pairing.token}`, { margin: 1, width: 560, errorCorrectionLevel: 'M' });
+  }
+  return {
+    ...status,
+    port,
+    pairingExpiresAt,
+    devices: server.listDevices(),
+    pin: String(config.pin),
+    clipboardHistory: config.clipboardHistory !== false,
+    autostart: autostartEnabled(),
+    addresses: addresses.map(({ address: a, iface }) => ({ address: a, iface })),
+    address,
+    url,
+    qr,
+    error: lastError,
+    version: app.getVersion(),
+  };
+}
+
+async function pushState() {
+  updateTray();
+  if (win && !win.isDestroyed()) win.webContents.send('state', await buildState());
+}
+
+function refreshAddresses() {
+  const next = lanAddresses();
+  const changed = next.map((a) => a.address).join() !== addresses.map((a) => a.address).join();
+  addresses = next;
+  return changed;
+}
+
+// ---------- Servidor ----------
+
+async function startServer() {
+  lastError = null;
+  try {
+    await server.start();
+  } catch (err) {
+    lastError = err.code === 'EADDRINUSE'
+      ? `El puerto ${server.loadConfig().port || 5577} ya está en uso. ¿Hay otra copia de Cursor Remoto abierta? Ciérrala o cambia el puerto.`
+      : `No se pudo iniciar el servidor: ${err.message}`;
+  }
+  await pushState();
+}
+
+async function stopServer() {
+  lastError = null;
+  await server.stop();
+  await pushState();
+}
+
+// ---------- Ventana y bandeja ----------
+
+function iconImage(size) {
+  return nativeImage.createFromPath(path.join(ROOT_DIR, 'public', 'icon-192.png')).resize({ width: size, height: size });
+}
+
+// La ventana vuelve a abrir con el tamaño y la posición en que la dejaste,
+// siempre que siga entrando en alguna pantalla (por si se desconectó un monitor).
+function savedBounds() {
+  const b = settings.bounds;
+  if (!b || ![b.x, b.y, b.width, b.height].every(Number.isFinite)) return {};
+  const area = screen.getDisplayMatching(b).workArea;
+  const visible = b.x < area.x + area.width - 80 && b.x + b.width > area.x + 80
+    && b.y >= area.y - 10 && b.y < area.y + area.height - 80;
+  return visible ? b : { width: b.width, height: b.height };
+}
+
+let boundsTimer = null;
+function rememberBounds() {
+  clearTimeout(boundsTimer);
+  boundsTimer = setTimeout(() => {
+    if (!win || win.isDestroyed() || win.isMinimized() || win.isMaximized()) return;
+    settings.bounds = win.getBounds();
+    saveSettings();
+  }, 400);
+}
+
+function createWindow() {
+  win = new BrowserWindow({
+    width: 900,
+    height: 660,
+    minWidth: 400,
+    minHeight: 520,
+    ...savedBounds(),
+    show: false,
+    title: 'Cursor Remoto',
+    icon: iconImage(64),
+    autoHideMenuBar: true,
+    backgroundColor: '#0f1012', // --bg de tokens.json, para que no parpadee al abrir
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      sandbox: true,
+      nodeIntegration: false,
+    },
+  });
+  win.setMenu(null);
+  win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+
+  // Los links (p. ej. abrir la URL en el navegador) salen al navegador del sistema.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (e) => e.preventDefault());
+
+  // Cerrar la ventana la esconde: el servidor sigue andando desde la bandeja.
+  win.on('close', (e) => {
+    if (!quitting) {
+      e.preventDefault();
+      win.hide();
+    }
+  });
+
+  win.on('resize', rememberBounds);
+  win.on('move', rememberBounds);
+
+  win.once('ready-to-show', () => { if (!START_HIDDEN) win.show(); });
+}
+
+function showWindow() {
+  if (!win) createWindow();
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+function updateTray() {
+  if (!tray) return;
+  const { running, clients } = server.status();
+  tray.setToolTip(running
+    ? `Cursor Remoto · activo${clients ? ` · ${clients} conectado${clients > 1 ? 's' : ''}` : ''}`
+    : 'Cursor Remoto · detenido');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'Abrir Cursor Remoto', click: showWindow },
+    { type: 'separator' },
+    running
+      ? { label: 'Detener servidor', click: stopServer }
+      : { label: 'Iniciar servidor', click: startServer },
+    { type: 'separator' },
+    { label: 'Salir', click: () => { quitting = true; app.quit(); } },
+  ]));
+}
+
+function createTray() {
+  tray = new Tray(iconImage(16));
+  tray.on('click', showWindow);
+  updateTray();
+}
+
+// ---------- IPC desde la ventana ----------
+
+function registerIpc() {
+  ipcMain.handle('state:get', () => buildState());
+  ipcMain.handle('server:start', () => startServer());
+  ipcMain.handle('server:stop', () => stopServer());
+
+  ipcMain.handle('pin:set', async (_e, pin) => {
+    const value = String(pin || '').trim();
+    if (!/^\d{4,12}$/.test(value)) return { ok: false, error: 'El PIN tiene que tener entre 4 y 12 números.' };
+    server.setPin(value);
+    await pushState();
+    return { ok: true };
+  });
+
+  ipcMain.handle('port:set', async (_e, port) => {
+    const value = Number(port);
+    if (!Number.isInteger(value) || value < 1024 || value > 65535) {
+      return { ok: false, error: 'El puerto tiene que ser un número entre 1024 y 65535.' };
+    }
+    const wasRunning = server.status().running;
+    if (wasRunning) await server.stop();
+    server.saveConfig({ port: value });
+    if (wasRunning) await startServer(); else await pushState();
+    return { ok: !lastError, error: lastError };
+  });
+
+  ipcMain.handle('clipboard:set', async (_e, enabled) => {
+    server.setClipboardEnabled(!!enabled);
+    await pushState();
+  });
+
+  ipcMain.handle('autostart:set', async (_e, enabled) => {
+    app.setLoginItemSettings({ ...loginItemOptions(), openAtLogin: !!enabled });
+    await pushState();
+  });
+
+  ipcMain.handle('address:set', async (_e, address) => {
+    settings.address = String(address);
+    saveSettings();
+    await pushState();
+  });
+
+  ipcMain.handle('device:revoke', async (_e, id) => {
+    server.revokeDevice(String(id));
+    await pushState();
+  });
+
+  ipcMain.handle('devices:revoke-all', async () => {
+    server.revokeAllDevices();
+    await pushState();
+  });
+
+  ipcMain.handle('copy', (_e, text) => { clipboard.writeText(String(text)); });
+  ipcMain.handle('open-url', (_e, url) => {
+    if (/^https?:\/\//.test(String(url))) shell.openExternal(String(url));
+  });
+}
+
+// ---------- Arranque ----------
+
+app.on('second-instance', showWindow);
+
+app.whenReady().then(async () => {
+  app.setAppUserModelId('cl.cursorremoto.desktop');
+  // La identidad es oscura: barra de título y diálogos (confirmar) también en oscuro.
+  nativeTheme.themeSource = 'dark';
+
+  const userData = app.getPath('userData');
+  fs.mkdirSync(userData, { recursive: true });
+  migrateFromMouseFinal(userData);
+  settingsPath = path.join(userData, 'desktop-settings.json');
+  loadSettings();
+
+  // En desarrollo, la primera vez se toma el config.json del repo (si existe)
+  // para no perder el PIN y los botones que ya tenías.
+  const devConfig = path.join(ROOT_DIR, 'config.json');
+  server = new MouseServer({
+    configPath: path.join(userData, 'config.json'),
+    dataDir: userData,
+    // Instalada, la app no puede escribir en su propia carpeta: los temas locales
+    // van en %APPDATA%\Cursor Remoto\themes\<nombre>\. En desarrollo, en themes/ del repo.
+    themesDir: app.isPackaged ? path.join(userData, 'themes') : path.join(ROOT_DIR, 'themes'),
+    seedConfigPath: !app.isPackaged && fs.existsSync(devConfig) ? devConfig : undefined,
+  });
+  // Nadie debería quedarse con el PIN de ejemplo: si es el de fábrica, se cambia
+  // por uno al azar (igual se puede ver y cambiar en la ventana).
+  if (String(server.loadConfig().pin) === '1234') {
+    server.setPin(String(crypto.randomInt(0, 1000000)).padStart(6, '0'));
+  }
+
+  server.on('status', () => pushState());
+  server.on('pairing', () => pushState());
+  server.on('log', (line) => process.stdout.write(line.endsWith('\n') ? line : `${line}\n`));
+
+  refreshAddresses();
+  registerIpc();
+  createTray();
+  createWindow();
+  await startServer();
+
+  // Si cambia la red (otro WiFi, se reconecta el cable) se actualiza la IP y el QR.
+  setInterval(() => { if (refreshAddresses()) pushState(); }, 5000);
+});
+
+// Con la ventana cerrada la app sigue viva en la bandeja.
+app.on('window-all-closed', () => {});
+
+app.on('before-quit', (e) => {
+  quitting = true;
+  if (server && server.status().running) {
+    e.preventDefault();
+    server.stop().finally(() => app.quit());
+  }
+});

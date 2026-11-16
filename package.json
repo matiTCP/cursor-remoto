@@ -1,14 +1,73 @@
 {
   "name": "cursor-remoto",
+  "productName": "Cursor Remoto",
   "version": "1.0.0",
-  "description": "Control remoto personal de mouse y teclado desde el celular",
-  "main": "server.js",
+  "description": "Control remoto de mouse y teclado desde el celular",
+  "author": "matiTCP",
+  "license": "MIT",
+  "main": "desktop/main.js",
   "scripts": {
     "start": "node server.js",
+    "desktop": "electron .",
+    "dist": "electron-builder --win nsis",
+    "postinstall": "node node_modules/electron/install.js",
     "tokens": "node scripts/build-tokens.js"
   },
   "dependencies": {
     "express": "^4.19.2",
+    "qrcode": "^1.5.4",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "cl.cursorremoto.desktop",
+    "productName": "Cursor Remoto",
+    "copyright": "MIT · matiTCP",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "desktop/**",
+      "src/**",
+      "agent/**",
+      "public/**",
+      "config.example.json",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "agent/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon-512.png",
+      "executableName": "CursorRemoto"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Cursor Remoto",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "CursorRemoto-Setup-${version}.${ext}",
+      "include": "build/installer.nsh",
+      "language": "3082",
+      "installerLanguages": [
+        "es_ES"
+      ]
+    }
   }
 }

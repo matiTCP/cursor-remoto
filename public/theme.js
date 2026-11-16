@@ -9,6 +9,13 @@ window.THEME = {
     offline: 'Sin conexión',
   },
   pinError: 'PIN incorrecto. Inténtalo de nuevo.',
+  // Emparejamiento por QR y límite de intentos. {s} = segundos de espera.
+  auth: {
+    deviceRevoked: 'Este dispositivo fue desvinculado. Escanea el QR de la PC o ingresa el PIN.',
+    pairExpired: 'El código QR venció. Escanéalo de nuevo o ingresa el PIN.',
+    locked: 'Demasiados intentos. Espera {s} s.',
+    wrongPinLocked: 'PIN incorrecto. Bloqueado por {s} s.',
+  },
   shutdown: {
     idle: 'Sin apagado programado',
     countdown: 'Apagado en',

@@ -1,8 +1,12 @@
 node_modules/
+# Instaladores generados con `npm run dist`
+dist/
 # Config real con tu PIN; en el repo va config.example.json
 config.json
 # Estado local del apagado programado
 .shutdown-state.json
+# Dispositivos emparejados (hashes de sus tokens)
+devices.json
 # Logs y basura del sistema
 *.log
 Thumbs.db
