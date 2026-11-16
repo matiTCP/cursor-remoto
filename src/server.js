@@ -1,4 +1,4 @@
-// Servidor de Mouse Final como modulo reutilizable.
+// Servidor de Cursor Remoto como módulo reutilizable.
 // Lo usan tanto `npm start` (server.js, sin interfaz) como la app de escritorio
 // (desktop/main.js), que lo puede iniciar, detener y reconfigurar en caliente.
 
@@ -71,13 +71,16 @@ class MouseServer extends EventEmitter {
    * @param {string} opts.configPath  config.json del usuario (con el PIN)
    * @param {string} opts.dataDir     carpeta para estado interno (apagado programado)
    * @param {string} [opts.seedConfigPath] de dónde copiar la config si no existe
+   * @param {string} [opts.themesDir] carpeta con los temas locales (themes/<nombre>/)
    */
-  constructor({ configPath, dataDir, seedConfigPath }) {
+  constructor({ configPath, dataDir, seedConfigPath, themesDir }) {
     super();
     this.configPath = configPath;
     this.dataDir = dataDir;
     this.seedConfigPath = seedConfigPath || path.join(ROOT_DIR, 'config.example.json');
     this.publicDir = path.join(ROOT_DIR, 'public');
+    this.themesDir = themesDir || path.join(ROOT_DIR, 'themes');
+    this.theme = { name: '', active: false };
     this.agentScript = unpacked(path.join(ROOT_DIR, 'agent', 'input-agent.ps1'));
     this.clipWatchScript = unpacked(path.join(ROOT_DIR, 'agent', 'clipboard-watch.ps1'));
 
@@ -255,6 +258,19 @@ class MouseServer extends EventEmitter {
     const port = Number(config.port) || 5577;
 
     const app = express();
+
+    // Temas: una carpeta themes/<nombre>/ con los archivos que cambian (index.html,
+    // style.css, theme.js, imágenes…). Lo que no traiga se toma de public/.
+    // Con "theme": "<nombre>" en config.json, ese tema se sirve en "/";
+    // la versión base queda siempre disponible en "/base/".
+    const themeName = String(config.theme || '').replace(/[^\w-]/g, '');
+    const themeDir = themeName && path.join(this.themesDir, themeName);
+    this.theme = { name: themeName, active: Boolean(themeDir && fs.existsSync(themeDir)) };
+
+    // Sin la barra final, las rutas relativas (style.css, app.js…) se pedirían en "/".
+    app.get(/^\/base$/, (req, res) => res.redirect('/base/'));
+    app.use('/base', express.static(this.publicDir));
+    if (this.theme.active) app.use(express.static(themeDir));
     app.use(express.static(this.publicDir));
     // El cliente pide su configuracion (botones, sensibilidad) sin el PIN.
     app.get('/api/config', (req, res) => {
@@ -307,7 +323,7 @@ class MouseServer extends EventEmitter {
   status() {
     let clients = 0;
     if (this.wss) this.wss.clients.forEach((c) => { if (c.authed && c.readyState === WebSocket.OPEN) clients++; });
-    return { running: this.running, port: this.port, clients };
+    return { running: this.running, port: this.port, clients, theme: { ...this.theme } };
   }
 
   emitStatus() {
@@ -394,7 +410,7 @@ class MouseServer extends EventEmitter {
           return;
         }
         this.emit('log', `No se pudo programar el apagado: ${err.message}`);
-        this.broadcastShutdownStatus('Falla en la secuencia. Inténtalo de nuevo.');
+        this.broadcastShutdownStatus('No se pudo programar el apagado. Inténtalo de nuevo.');
         return;
       }
       this.shutdownAt = Date.now() + clamped * 1000;

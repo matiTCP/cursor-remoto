@@ -5,6 +5,7 @@
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { execFileSync } = require('child_process');
 const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, clipboard, shell } = require('electron');
 const QRCode = require('qrcode');
 const { MouseServer, lanAddresses } = require('../src/server');
@@ -36,13 +37,34 @@ function saveSettings() {
   try { fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2)); } catch {}
 }
 
+// ---------- Migración desde el nombre anterior ("Mouse Final") ----------
+// La primera vez que corre como "Cursor Remoto", trae la configuración, el PIN y
+// los dispositivos emparejados de %APPDATA%\Mouse Final, si existen.
+
+function migrateFromMouseFinal(userData) {
+  const oldDir = path.join(path.dirname(userData), 'Mouse Final');
+  if (oldDir === userData || fs.existsSync(path.join(userData, 'config.json'))) return;
+  for (const file of ['config.json', 'devices.json', 'desktop-settings.json', '.shutdown-state.json']) {
+    try { fs.copyFileSync(path.join(oldDir, file), path.join(userData, file)); } catch {}
+  }
+  // El "Iniciar con Windows" viejo apuntaba al ejecutable anterior: se reemplaza.
+  const runKey = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+  try {
+    execFileSync('reg', ['query', runKey, '/v', 'MouseFinal'], { stdio: 'ignore', windowsHide: true });
+    execFileSync('reg', ['delete', runKey, '/v', 'MouseFinal', '/f'], { stdio: 'ignore', windowsHide: true });
+    app.setLoginItemSettings({ ...loginItemOptions(), openAtLogin: true });
+  } catch {
+    // No estaba activado.
+  }
+}
+
 // ---------- Inicio con Windows ----------
 // En desarrollo el ejecutable es electron.exe y hay que pasarle la carpeta de la app.
 
 function loginItemOptions() {
   const args = app.isPackaged ? ['--hidden'] : [app.getAppPath(), '--hidden'];
   // "name" es el valor en HKCU\...\Run; el desinstalador lo borra con este mismo nombre.
-  return { path: process.execPath, args, name: 'MouseFinal' };
+  return { path: process.execPath, args, name: 'CursorRemoto' };
 }
 
 function autostartEnabled() {
@@ -108,7 +130,7 @@ async function startServer() {
     await server.start();
   } catch (err) {
     lastError = err.code === 'EADDRINUSE'
-      ? `El puerto ${server.loadConfig().port || 5577} ya está en uso. ¿Hay otra copia de Mouse Final abierta? Cerrala o cambiá el puerto.`
+      ? `El puerto ${server.loadConfig().port || 5577} ya está en uso. ¿Hay otra copia de Cursor Remoto abierta? Ciérrala o cambia el puerto.`
       : `No se pudo iniciar el servidor: ${err.message}`;
   }
   await pushState();
@@ -133,7 +155,7 @@ function createWindow() {
     minWidth: 380,
     minHeight: 560,
     show: false,
-    title: 'Mouse Final',
+    title: 'Cursor Remoto',
     icon: iconImage(64),
     autoHideMenuBar: true,
     backgroundColor: '#16161a',
@@ -176,10 +198,10 @@ function updateTray() {
   if (!tray) return;
   const { running, clients } = server.status();
   tray.setToolTip(running
-    ? `Mouse Final · activo${clients ? ` · ${clients} conectado${clients > 1 ? 's' : ''}` : ''}`
-    : 'Mouse Final · detenido');
+    ? `Cursor Remoto · activo${clients ? ` · ${clients} conectado${clients > 1 ? 's' : ''}` : ''}`
+    : 'Cursor Remoto · detenido');
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Abrir Mouse Final', click: showWindow },
+    { label: 'Abrir Cursor Remoto', click: showWindow },
     { type: 'separator' },
     running
       ? { label: 'Detener servidor', click: stopServer }
@@ -259,10 +281,11 @@ function registerIpc() {
 app.on('second-instance', showWindow);
 
 app.whenReady().then(async () => {
-  app.setAppUserModelId('cl.mousefinal.desktop');
+  app.setAppUserModelId('cl.cursorremoto.desktop');
 
   const userData = app.getPath('userData');
   fs.mkdirSync(userData, { recursive: true });
+  migrateFromMouseFinal(userData);
   settingsPath = path.join(userData, 'desktop-settings.json');
   loadSettings();
 
@@ -272,6 +295,9 @@ app.whenReady().then(async () => {
   server = new MouseServer({
     configPath: path.join(userData, 'config.json'),
     dataDir: userData,
+    // Instalada, la app no puede escribir en su propia carpeta: los temas locales
+    // van en %APPDATA%\Cursor Remoto\themes\<nombre>\. En desarrollo, en themes/ del repo.
+    themesDir: app.isPackaged ? path.join(userData, 'themes') : path.join(ROOT_DIR, 'themes'),
     seedConfigPath: !app.isPackaged && fs.existsSync(devConfig) ? devConfig : undefined,
   });
   // Nadie debería quedarse con el PIN de ejemplo: si es el de fábrica, se cambia

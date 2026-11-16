@@ -203,7 +203,7 @@ el.portForm.addEventListener('submit', async (e) => {
   const res = await window.mf.setPort(el.portInput.value);
   if (res.ok) {
     portDirty = false;
-    setMsg(el.portMsg, 'Puerto aplicado. Escaneá el QR de nuevo en el celular.', 'ok');
+    setMsg(el.portMsg, 'Puerto aplicado. Escanea el QR de nuevo en el celular.', 'ok');
   } else {
     setMsg(el.portMsg, res.error, 'err');
   }

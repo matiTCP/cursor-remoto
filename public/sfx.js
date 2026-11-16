@@ -1,7 +1,6 @@
-// Efectos de sonido al estilo de los menús de inventario de los primeros Resident Evil.
-// Se sintetizan con Web Audio (no se incluye audio de los juegos). Si ponés tus propios
-// archivos en public/sfx/ y los anotás en public/sfx/index.json (claves: cursor, select,
-// cancel, open, error), se usan esos en vez de los sintetizados.
+// Efectos de sonido de menú, sintetizados con Web Audio (sin archivos de audio).
+// Si pones tus propios archivos en public/sfx/ y los anotas en public/sfx/index.json
+// (claves: cursor, select, cancel, open, error), se usan esos en vez de los sintetizados.
 window.SFX = (() => {
   const NAMES = ['cursor', 'select', 'cancel', 'open', 'error'];
   let ctx = null;
@@ -96,7 +95,7 @@ window.SFX = (() => {
   }
 
   const SOUNDS = {
-    // Mover el cursor por el inventario: un "pip" corto y agudo
+    // Mover el cursor por un menú: un "pip" corto y agudo
     cursor() {
       noise({ dur: 0.012, gain: 0.25, f0: 5200 });
       tone({ f0: 1760, f1: 1480, dur: 0.05, gain: 0.16 });
@@ -112,7 +111,7 @@ window.SFX = (() => {
       tone({ type: 'triangle', f0: 988, dur: 0.06, gain: 0.3, cutoff: 3000 });
       tone({ type: 'triangle', f0: 659, f1: 600, at: 0.055, dur: 0.1, gain: 0.3, cutoff: 3000 });
     },
-    // Abrir el inventario / una ventana: golpe sordo + deslizamiento + click final
+    // Abrir una ventana: golpe sordo + deslizamiento + click final
     open() {
       tone({ type: 'sine', f0: 150, f1: 55, dur: 0.14, gain: 0.5, cutoff: 800 });
       noise({ dur: 0.17, gain: 0.22, f0: 350, f1: 2600, q: 2.2 });

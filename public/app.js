@@ -68,6 +68,7 @@
   const sfxToggle = document.getElementById('sfxToggle');
   const sfxVolume = document.getElementById('sfxVolume');
   const sfx = (name) => window.SFX && window.SFX.play(name);
+  const T = window.THEME; // textos del tema (theme.js)
 
   let ws = null;
   let authed = false;
@@ -125,7 +126,7 @@
     });
   });
 
-  // Estado de conexión al estilo Resident Evil: fine / caution / danger.
+  // Estado de conexión: fine (verde) / caution (ámbar) / danger (rojo).
   function setStatus(state, text) {
     statusBar.classList.remove('fine', 'caution', 'danger');
     statusBar.classList.add(state);
@@ -160,12 +161,21 @@
     } else if (legacyPin) {
       ws.send(JSON.stringify({ type: 'auth', pin: legacyPin }));
     } else {
-      setStatus('caution', 'Caution · Identifícate');
+      setStatus('caution', T.status.askPin);
       showPinOverlay();
       return;
     }
-    setStatus('caution', 'Caution · Verificando…');
+    setStatus('caution', T.status.verifying);
   }
+
+  // Textos del emparejamiento; un tema local viejo puede no traerlos.
+  const AUTH_TEXT = Object.assign({
+    deviceRevoked: 'Este dispositivo fue desvinculado. Escanea el QR de la PC o ingresa el PIN.',
+    pairExpired: 'El código QR venció. Escanéalo de nuevo o ingresa el PIN.',
+    locked: 'Demasiados intentos. Espera {s} s.',
+    wrongPinLocked: 'PIN incorrecto. Bloqueado por {s} s.',
+  }, T.auth || {});
+  const withSeconds = (text, s) => text.replace('{s}', s);
 
   function authFailed(msg) {
     authed = false;
@@ -175,21 +185,19 @@
 
     if (msg.reason === 'device') {
       store.remove('mf_device');
-      pinError.textContent = 'Este dispositivo fue desvinculado. Ingresa el código o escanea el QR de la PC.';
+      pinError.textContent = AUTH_TEXT.deviceRevoked;
     } else if (msg.reason === 'pair') {
       clearPairHash();
-      pinError.textContent = 'El código QR venció. Escanéalo de nuevo o ingresa el PIN.';
+      pinError.textContent = AUTH_TEXT.pairExpired;
     } else if (msg.reason === 'locked') {
       clearPairHash();
-      pinError.textContent = `Demasiados intentos. Espera ${msg.retryIn} s.`;
+      pinError.textContent = withSeconds(AUTH_TEXT.locked, msg.retryIn);
     } else {
-      pinError.textContent = msg.retryIn
-        ? `Código incorrecto. Bloqueado por ${msg.retryIn} s.`
-        : 'Código incorrecto. Acceso denegado.';
+      pinError.textContent = msg.retryIn ? withSeconds(AUTH_TEXT.wrongPinLocked, msg.retryIn) : T.pinError;
     }
     if (wasPin || msg.reason !== 'device') sfx('error');
     showPinOverlay();
-    setStatus('danger', 'Danger · Acceso denegado');
+    setStatus('danger', T.status.denied);
   }
 
   function connect() {
@@ -213,7 +221,7 @@
           clearPairHash();
           pinError.textContent = '';
           pinOverlay.style.display = 'none';
-          setStatus('fine', 'Fine · Enlace establecido');
+          setStatus('fine', T.status.linked);
         } else {
           authFailed(msg);
         }
@@ -227,7 +235,7 @@
 
     ws.addEventListener('close', () => {
       authed = false;
-      setStatus('danger', 'Danger · Sin señal');
+      setStatus('danger', T.status.offline);
       setTimeout(connect, 1500);
     });
 
@@ -358,7 +366,7 @@
     send({ type: 'open', target: 'cursor_settings' });
   });
 
-  // --- Baúl de copiados (historial del portapapeles del PC) ---
+  // --- Historial del portapapeles del PC ---
   const CLIP_ICONS = {
     pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/></svg>',
     del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -443,8 +451,8 @@
   });
 
   clipClear.addEventListener('click', () => {
-    setConfirmText('Me llevo ', 'todo lo que no esté fijado', '. Lo fijado se queda contigo.');
-    openConfirm('¿Vaciar el baúl, extranjero?', () => send({ type: 'clip', action: 'clear' }), 'El Buhonero');
+    setConfirmText(T.clip.clearBefore, T.clip.clearHighlight, T.clip.clearAfter);
+    openConfirm(T.clip.clearTitle, () => send({ type: 'clip', action: 'clear' }), T.clip.clearKicker);
   });
 
   // --- Sonidos de menú ---
@@ -655,7 +663,7 @@
     }
 
     if (!shutdownScheduledAt) {
-      shutdownStatus.textContent = 'Secuencia inactiva';
+      shutdownStatus.textContent = T.shutdown.idle;
       shutdownStatus.classList.remove('active');
       cancelShutdownBtn.hidden = true;
       return;
@@ -667,7 +675,7 @@
     const tick = () => {
       const remainingMs = shutdownScheduledAt - Date.now();
       if (remainingMs <= 0) {
-        shutdownStatus.textContent = 'Evacúe de inmediato';
+        shutdownStatus.textContent = T.shutdown.now;
         clearInterval(countdownTimer);
         countdownTimer = null;
         return;
@@ -677,7 +685,7 @@
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
       const parts = [h, m, s].map((n) => String(n).padStart(2, '0'));
-      shutdownStatus.textContent = `Apagado en ${parts.join(':')}`;
+      shutdownStatus.textContent = `${T.shutdown.countdown} ${parts.join(':')}`;
     };
 
     tick();
@@ -704,7 +712,7 @@
     confirmText.replaceChildren(document.createTextNode(before), strong, document.createTextNode(after));
   }
 
-  function openConfirm(title, action, kicker = 'Sistema de autodestrucción') {
+  function openConfirm(title, action, kicker = T.shutdown.kicker) {
     confirmKicker.textContent = kicker;
     confirmTitle.textContent = title;
     pendingConfirmAction = action;
@@ -724,8 +732,8 @@
 
   function askShutdownConfirm(seconds, detail) {
     if (!seconds || seconds <= 0) return;
-    setConfirmText('El equipo se apagará ', detail || describeDelay(seconds), '. Todo el personal debe evacuar.');
-    openConfirm('¿Activar la autodestrucción?', () => {
+    setConfirmText('El equipo se apagará ', detail || describeDelay(seconds), T.shutdown.scheduleAfter);
+    openConfirm(T.shutdown.scheduleTitle, () => {
       send({ type: 'shutdown', action: 'schedule', seconds });
     });
   }
@@ -738,7 +746,7 @@
     } else {
       setConfirmText('Se cancelará el apagado. ', 'El equipo seguirá encendido', '.');
     }
-    openConfirm('¿Abortar la secuencia?', () => {
+    openConfirm(T.shutdown.cancelTitle, () => {
       send({ type: 'shutdown', action: 'cancel' });
     });
   }

@@ -1,6 +1,6 @@
 {
-  "name": "mouse-final",
-  "productName": "Mouse Final",
+  "name": "cursor-remoto",
+  "productName": "Cursor Remoto",
   "version": "1.0.0",
   "description": "Control remoto de mouse y teclado desde el celular",
   "author": "matiTCP",
@@ -23,8 +23,8 @@
     "electron-builder": "^26.18.0"
   },
   "build": {
-    "appId": "cl.mousefinal.desktop",
-    "productName": "Mouse Final",
+    "appId": "cl.cursorremoto.desktop",
+    "productName": "Cursor Remoto",
     "copyright": "MIT · matiTCP",
     "directories": {
       "output": "dist",
@@ -51,7 +51,7 @@
         }
       ],
       "icon": "public/icon-512.png",
-      "executableName": "MouseFinal"
+      "executableName": "CursorRemoto"
     },
     "nsis": {
       "oneClick": false,
@@ -59,10 +59,10 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Mouse Final",
+      "shortcutName": "Cursor Remoto",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
-      "artifactName": "MouseFinal-Setup-${version}.${ext}",
+      "artifactName": "CursorRemoto-Setup-${version}.${ext}",
       "include": "build/installer.nsh",
       "language": "3082",
       "installerLanguages": [

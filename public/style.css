@@ -1,7 +1,5 @@
 /* ===========================================================
-   Mouse Final — tema "Resident Evil"
-   Negro cálido, rojo sangre, hueso, tipografía en mayúsculas,
-   esquinas rectas con marcos de expediente, grano y viñeta.
+   Cursor Remoto — tema oscuro minimalista
    Colores y medidas: variables de tokens.css (generado desde
    tokens.json con "npm run tokens"). Aquí no van valores sueltos.
    =========================================================== */
@@ -17,64 +15,35 @@
 html, body {
   height: 100%;
   margin: 0;
-  color: var(--bone);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans);
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
-  background:
-    radial-gradient(circle at 50% 0%, var(--bg-ember), transparent 55%),
-    linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 60%, var(--bg-bottom) 100%);
-  background-attachment: fixed;
 }
 
-/* --- Viñeta + grano de película (encima de todo, sin bloquear toques) --- */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: var(--z-vignette);
-  background: radial-gradient(ellipse at center, transparent 42%, var(--vignette) 100%);
-}
+button, input, textarea { font-family: inherit; }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: var(--z-grain);
-  opacity: var(--opacity-grain);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* --- Barra de estado: electrocardiograma FINE / CAUTION / DANGER --- */
+/* --- Barra de estado: electrocardiograma (conectado / conectando / sin conexión) --- */
 #statusBar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  padding-top: calc(env(safe-area-inset-top, 0px) + var(--space-9));
-  padding-bottom: var(--space-9);
+  padding: calc(env(safe-area-inset-top, 0px) + var(--space-2)) var(--space-4) var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-9);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--bone-dim);
+  gap: var(--space-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
   z-index: var(--z-status);
   pointer-events: none;
-  background: linear-gradient(to bottom, var(--surface-status), transparent);
+  background: linear-gradient(to bottom, var(--bg) 40%, transparent);
 }
 
-#statusEcg {
-  opacity: 0.9;
-  filter: drop-shadow(0 0 4px currentColor);
-}
-
-#statusBar.fine    { color: var(--herb); }
-#statusBar.caution { color: var(--amber); }
-#statusBar.danger  { color: var(--blood); }
+#statusBar.fine    { color: var(--ok); }
+#statusBar.caution { color: var(--warn); }
+#statusBar.danger  { color: var(--danger); }
 
 #statusBar.fine #statusEcg { animation: ecgPulse 1.6s ease-in-out infinite; }
 
@@ -95,141 +64,83 @@ body::after {
   inset: 0;
   display: none;
   flex-direction: column;
-  gap: var(--space-12);
-  padding: calc(env(safe-area-inset-top, 0px) + var(--offset-top)) var(--space-13) calc(env(safe-area-inset-bottom, 0px) + var(--offset-bottom));
+  gap: var(--space-3);
+  padding: calc(env(safe-area-inset-top, 0px) + var(--offset-top)) var(--space-4) calc(env(safe-area-inset-bottom, 0px) + var(--offset-bottom));
   overflow-y: auto;
 }
 .panel.active { display: flex; }
-.panel-spacer { flex: 0 0 var(--space-2); }
-
-/* Marco de expediente: cortes en dos esquinas opuestas */
-.framed {
-  position: relative;
-}
-.framed::before,
-.framed::after {
-  content: '';
-  position: absolute;
-  z-index: 3;
-  width: var(--size-frame-corner);
-  height: var(--size-frame-corner);
-  border-color: var(--blood);
-  border-style: solid;
-  opacity: var(--opacity-frame);
-  pointer-events: none;
-}
-.framed::before {
-  top: -1px; left: -1px;
-  border-width: 1px 0 0 1px;
-}
-.framed::after {
-  bottom: -1px; right: -1px;
-  border-width: 0 1px 1px 0;
-}
+.panel-spacer { flex: 0 0 var(--space-1); }
 
 /* --- Trackpad --- */
 #trackpad {
   touch-action: none;
   overscroll-behavior: contain;
-  position: relative;
   flex: 1;
   min-height: var(--size-trackpad-min);
-  background:
-    repeating-linear-gradient(0deg, var(--line-grid) 0 1px, transparent 1px 28px),
-    repeating-linear-gradient(90deg, var(--line-grid) 0 1px, transparent 1px 28px),
-    linear-gradient(160deg, rgba(30, 24, 20, 0.9), rgba(12, 10, 9, 0.9));
-  border: 1px solid var(--line);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: var(--space-12);
-  box-shadow: var(--shadow-trackpad);
+  gap: var(--space-2);
 }
-
-#trackpad::before,
-#trackpad::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-color: var(--blood);
-  border-style: solid;
-  opacity: 0.9;
-  pointer-events: none;
-}
-#trackpad::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-#trackpad::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 #trackpadLabel {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.42em;
-  color: var(--blood);
-  text-indent: 0.42em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
   pointer-events: none;
-  text-shadow: 0 0 10px var(--blood-glow);
 }
 
 #trackpadHint {
-  color: var(--bone-dim);
-  font-size: 11px;
-  line-height: 1.7;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0 var(--space-26);
-  pointer-events: none;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 0 var(--space-6);
   margin: 0;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
-/* --- Grillas de botones: casillas de inventario --- */
+/* --- Grillas de botones --- */
 .button-grid {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-2);
 }
 .button-grid.three { grid-template-columns: repeat(3, 1fr); }
 .button-grid.two { grid-template-columns: repeat(2, 1fr); }
-.button-grid.two.big .btn { padding: var(--space-24) var(--space-8); }
+.button-grid.two.big .btn { padding: var(--space-6) var(--space-2); }
 .button-grid.two.big svg { width: var(--size-icon-big); height: var(--size-icon-big); }
 
 .btn {
-  position: relative;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--bone);
-  padding: 15px 6px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-4) var(--space-1) var(--space-3);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-8);
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  gap: var(--space-2);
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
-
 .btn svg { width: var(--size-icon); height: var(--size-icon); flex-shrink: 0; }
 
 .btn span.label {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--bone-dim);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
 
-.btn:active {
-  background: var(--blood-dim);
-  border-color: var(--blood);
-  color: var(--on-blood);
-  box-shadow: var(--shadow-press);
-}
-.btn:active span.label { color: var(--blood); }
+.btn:active { background: var(--surface-press); border-color: var(--border-strong); }
 
 /* --- D-Pad --- */
 .dpad {
@@ -240,170 +151,104 @@ body::after {
     ".    up    ."
     "left center right"
     ".    down  .";
-  gap: var(--space-7);
+  gap: var(--space-2);
   justify-content: center;
   margin: var(--space-4) auto;
 }
 
 .dpad-btn {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: var(--bone-dim);
-  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dim);
+  transition: background 0.12s ease;
 }
-.dpad-btn:active {
-  background: var(--blood-dim);
-  border-color: var(--blood);
-  color: var(--blood);
-  box-shadow: var(--shadow-press);
-}
+.dpad-btn:active { background: var(--surface-press); color: var(--text); }
 .dpad-btn[data-area="up"] { grid-area: up; }
 .dpad-btn[data-area="down"] { grid-area: down; }
 .dpad-btn[data-area="left"] { grid-area: left; }
 .dpad-btn[data-area="right"] { grid-area: right; }
 .dpad-btn.center {
   grid-area: center;
-  border-color: var(--line-strong);
-  color: var(--bone);
-  background: var(--blood-tint);
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent-text);
 }
 
-.dpad-btn[data-area="up"]::before    { content: ''; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 13px solid currentColor; }
-.dpad-btn[data-area="down"]::before  { content: ''; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 13px solid currentColor; }
-.dpad-btn[data-area="left"]::before  { content: ''; width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-right: 13px solid currentColor; }
-.dpad-btn[data-area="right"]::before { content: ''; width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 13px solid currentColor; }
+.dpad-btn[data-area="up"]::before    { content: ''; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 11px solid currentColor; }
+.dpad-btn[data-area="down"]::before  { content: ''; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 11px solid currentColor; }
+.dpad-btn[data-area="left"]::before  { content: ''; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-right: 11px solid currentColor; }
+.dpad-btn[data-area="right"]::before { content: ''; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 11px solid currentColor; }
 
 /* --- Tarjetas --- */
-.glass-card {
-  position: relative;
+.card {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--space-16);
-  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
 }
-.glass-card::before,
-.glass-card::after {
-  content: '';
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  border-color: var(--blood);
-  border-style: solid;
-  opacity: 0.8;
-  pointer-events: none;
-}
-.glass-card::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-.glass-card::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 .card-title {
-  margin: 0 0 var(--space-14);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--bone);
-  padding-left: var(--space-9);
-  border-left: 2px solid var(--blood);
-  line-height: 1.2;
+  margin: 0 0 var(--space-3);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
   display: flex;
   align-items: center;
-  gap: var(--space-10);
+  gap: var(--space-2);
 }
 
-/* --- Objetos de Resident Evil repartidos por la app --- */
 .card-icon {
   width: var(--size-card-icon);
   height: var(--size-card-icon);
-  object-fit: contain;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
-}
-
-.hint-with-icon {
-  display: flex;
-  align-items: center;
-  gap: var(--space-10);
-}
-
-/* Fila de objetos decorativos que rellena el aire de cada pestaña */
-.relics {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  gap: var(--space-8);
-  padding: var(--space-4) var(--space-6);
-  opacity: var(--opacity-relics);
-}
-.relics img {
-  height: var(--size-relic);
-  width: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.8));
-}
-
-#pinEmblem {
-  width: var(--size-emblem);
-  height: var(--size-emblem);
-  object-fit: contain;
-  margin-bottom: var(--space-14);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .hint {
-  margin: var(--space-10) 0 0;
-  font-size: 10.5px;
-  letter-spacing: 0.04em;
-  color: var(--bone-dim);
-  line-height: 1.6;
+  margin: var(--space-3) 0 0;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
 }
-
-/* Firma del personaje que "habla" en cada nota */
-.hint .sign {
-  display: block;
-  margin-top: 5px;
-  text-align: right;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--blood);
-}
+.hint strong { color: var(--text); font-weight: 600; }
 
 /* --- Sliders --- */
 .slider {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
-  border-radius: var(--radius-none);
-  background: var(--line-track);
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-press);
   outline: none;
   border: none;
+  margin: var(--space-2) 0;
 }
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 26px;
-  border-radius: var(--radius-thumb);
-  background: linear-gradient(180deg, var(--blood-thumb), var(--blood));
-  border: 1px solid var(--thumb-edge);
-  box-shadow: var(--shadow-thumb);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--text);
+  border: 4px solid var(--accent);
 }
 
-/* --- Baúl de copiados --- */
+/* --- Portapapeles --- */
 .clip-add {
   display: flex;
-  gap: var(--space-7);
-  margin-bottom: var(--space-12);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 #clipNew {
   flex: 1;
@@ -411,18 +256,18 @@ body::after {
   min-height: var(--size-touch-min);
   max-height: 120px;
   background: var(--well);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--bone);
-  padding: 11px var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 11px var(--space-3);
   font-size: 16px; /* 16px evita que iOS haga zoom al enfocar */
-  font-family: inherit;
   resize: none;
   -webkit-user-select: text;
   user-select: text;
   -webkit-touch-callout: default; /* para el menú "Pegar" de iOS */
 }
-#clipNew::placeholder { color: var(--bone-dim); font-size: 13px; }
+#clipNew::placeholder { color: var(--text-dim); font-size: 14px; }
+#clipNew:focus { outline: none; border-color: var(--border-strong); }
 
 .clip-list {
   list-style: none;
@@ -430,21 +275,20 @@ body::after {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-7);
+  gap: var(--space-2);
 }
 .clip-item {
-  background: var(--well-soft);
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--line-strong);
-  border-radius: var(--radius);
-  padding: var(--space-10) var(--space-10) var(--space-8) 11px;
+  background: var(--well);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
 }
-.clip-item.pinned { border-left-color: var(--amber); }
+.clip-item.pinned { border-color: var(--warn); }
 .clip-text {
-  margin: 0 0 var(--space-8);
-  font-size: 13px;
+  margin: 0 0 var(--space-2);
+  font-size: 14px;
   line-height: 1.45;
-  color: var(--bone);
+  color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
   display: -webkit-box;
@@ -456,18 +300,16 @@ body::after {
 .clip-row {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-2);
 }
 .clip-meta {
   flex: 1;
   min-width: 0;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--bone-dim);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
 }
-.clip-item.pinned .clip-meta { color: var(--amber); }
+.clip-item.pinned .clip-meta { color: var(--warn); }
 .clip-icon-btn {
   width: 38px;
   height: 36px;
@@ -475,188 +317,186 @@ body::after {
   align-items: center;
   justify-content: center;
   background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--bone-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
 }
 .clip-icon-btn svg { width: 16px; height: 16px; }
-.clip-icon-btn:active { background: var(--blood-dim); border-color: var(--blood); color: var(--blood); }
-.clip-item.pinned .clip-icon-btn.pin { color: var(--amber); border-color: var(--amber-edge); }
-.clip-row .btn-accent { padding: var(--space-10) var(--space-14); }
+.clip-icon-btn:active { background: var(--surface-press); color: var(--text); }
+.clip-item.pinned .clip-icon-btn.pin { color: var(--warn); }
+.clip-row .btn-accent { padding: var(--space-2) var(--space-4); min-height: 36px; }
 .clip-empty { margin-top: 0; }
-#clipClear { margin-top: var(--space-12); }
+#clipClear { margin-top: var(--space-3); }
 
 /* --- Sonidos --- */
 .sfx-row {
   display: flex;
   align-items: center;
-  gap: var(--space-14);
+  gap: var(--space-4);
 }
 .sfx-toggle {
   flex: 0 0 auto;
   min-width: 118px;
 }
 .sfx-toggle[aria-pressed="true"] {
-  background: var(--blood-dim);
-  border-color: var(--blood);
-  color: var(--bone);
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent-text);
 }
-.sfx-toggle[aria-pressed="false"] { color: var(--bone-dim); }
+.sfx-toggle[aria-pressed="false"] { color: var(--text-dim); }
 .sfx-row .slider { flex: 1; min-width: 0; }
 .sfx-row .slider:disabled { opacity: var(--opacity-disabled); }
 
 /* --- Apagado --- */
 .shutdown-status {
   background: var(--well);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--space-13);
-  font-size: 12.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-size: 15px;
+  font-weight: 600;
   text-align: center;
-  margin-bottom: var(--space-13);
-  color: var(--bone-dim);
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  margin-bottom: var(--space-3);
+  color: var(--text-dim);
   font-variant-numeric: tabular-nums;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-
 .shutdown-status.active {
-  color: var(--amber);
-  border-color: var(--amber-line);
-  background: var(--amber-dim);
-  text-shadow: 0 0 12px var(--amber-line);
+  color: var(--warn);
+  border-color: var(--warn);
+  background: var(--warn-soft);
 }
 
 .chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-7);
-  margin-bottom: var(--space-13);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .chip {
   flex: 1 1 auto;
+  min-height: var(--size-touch-min);
   background: var(--surface-2);
-  border: 1px solid var(--line);
-  color: var(--bone);
-  padding: 11px var(--space-12);
-  border-radius: var(--radius);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.12s;
 }
-.chip:active {
-  background: var(--blood-dim);
-  border-color: var(--blood);
-  color: var(--blood);
-}
+.chip:active { background: var(--surface-press); }
 
 .shutdown-row {
   display: flex;
-  gap: var(--space-7);
-  margin-bottom: var(--space-9);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
 .shutdown-row input {
   flex: 1;
   min-width: 0;
+  min-height: var(--size-touch-min);
   background: var(--well);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--bone);
-  padding: var(--space-12);
-  font-size: 13px;
-  letter-spacing: 0.06em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-2) var(--space-3);
+  font-size: 16px;
   color-scheme: dark;
 }
 
 .btn-accent {
-  background: linear-gradient(180deg, var(--blood-bright), var(--blood));
-  color: var(--on-blood);
-  border: 1px solid var(--on-blood-edge);
-  border-radius: var(--radius);
-  padding: var(--space-12) var(--space-14);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  min-height: var(--size-touch-min);
+  background: var(--accent);
+  color: var(--on-accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
+  font-weight: 600;
   white-space: nowrap;
-  box-shadow: var(--shadow-accent);
 }
-.btn-accent:active { filter: brightness(0.82); }
-.btn-accent.full { width: 100%; padding: var(--space-13); }
+.btn-accent:active { filter: brightness(0.85); }
+.btn-accent.full { width: 100%; }
 
 .btn-danger {
   width: 100%;
-  background: var(--well);
-  color: var(--blood);
-  border: 1px solid var(--blood-edge);
-  border-radius: var(--radius);
-  padding: var(--space-12);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-top: var(--space-2);
+  min-height: var(--size-touch-min);
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: var(--space-1);
 }
-.btn-danger:active { background: var(--blood-dim); }
+.btn-danger:active { background: var(--danger-soft); }
 
 /* --- Botón flotante de teclado --- */
 #keyboardFab {
   position: fixed;
-  right: var(--space-14);
+  right: var(--space-4);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
   width: var(--size-fab);
   height: var(--size-fab);
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 190, 185, 0.28);
-  background: linear-gradient(180deg, var(--blood-bright), var(--blood-deep));
-  color: var(--on-blood);
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-fab);
   z-index: var(--z-fab);
 }
-#keyboardFab:active { filter: brightness(0.82); }
+#keyboardFab:active { filter: brightness(0.85); }
+
+/* En Mouse el botón del teclado va arriba del trackpad (a la derecha),
+   y el trackpad baja lo justo para dejarle su espacio. */
+body[data-tab="mouse"] #keyboardFab {
+  top: calc(env(safe-area-inset-top, 0px) + var(--offset-top));
+  bottom: auto;
+}
+.panel[data-panel="mouse"] {
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--offset-top-mouse));
+}
 
 /* --- Panel de teclado --- */
 #keyboardPanel {
   position: fixed;
-  left: var(--space-13);
-  right: var(--space-13);
+  left: var(--space-4);
+  right: var(--space-4);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 82px);
   z-index: var(--z-keyboard);
 }
+#keyboardPanel .card { box-shadow: var(--shadow-modal); }
 
 #hiddenInput {
   width: 100%;
   min-height: 62px;
-  background: var(--well-deep);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--bone);
-  padding: var(--space-12);
+  background: var(--well);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-3);
   font-size: 16px;
-  font-family: inherit;
-  letter-spacing: 0.04em;
   resize: none;
-  margin-bottom: var(--space-9);
-  /* El bloqueo global de selección/callout de iOS no debe aplicar acá, o el
+  margin: var(--space-3) 0 var(--space-2);
+  /* El bloqueo global de selección/callout de iOS no debe aplicar aquí, o el
      campo puede quedar sin poder enfocarse / sin abrir el teclado nativo. */
   -webkit-user-select: text;
   user-select: text;
   -webkit-touch-callout: default;
 }
-#hiddenInput::placeholder { color: var(--bone-dim); }
+#hiddenInput::placeholder { color: var(--text-dim); }
+#hiddenInput:focus { outline: none; border-color: var(--border-strong); }
 
 .keyboard-actions {
   display: flex;
-  gap: var(--space-7);
+  gap: var(--space-2);
   align-items: stretch;
 }
 .keyboard-actions .chip { flex: 1 1 0; }
@@ -667,148 +507,41 @@ body::after {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   display: flex;
-  padding: var(--space-7) var(--space-6) calc(env(safe-area-inset-bottom, 0px) + var(--space-7));
-  background: linear-gradient(180deg, var(--surface-bar), rgba(6, 5, 4, 0.98));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--line-strong);
+  padding: var(--space-2) var(--space-1) calc(env(safe-area-inset-bottom, 0px) + var(--space-2));
+  background: var(--surface-bar);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
   z-index: var(--z-tabbar);
 }
 
 .tab-btn {
-  position: relative;
   flex: 1;
   min-width: 0;
   background: none;
   border: none;
-  color: var(--bone-dim);
+  color: var(--text-dim);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  padding: 7px 2px 6px;
-  border-radius: var(--radius);
+  gap: var(--space-1);
+  padding: 6px 2px;
+  border-radius: var(--radius-sm);
   transition: color 0.15s;
 }
-.tab-btn svg { flex-shrink: 0; opacity: 0.85; }
+.tab-btn svg { flex-shrink: 0; }
 .tab-btn span {
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 10.5px;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
-.tab-btn.active {
-  color: var(--blood);
-}
-.tab-btn.active svg {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px var(--blood-glow));
-}
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 22%;
-  right: 22%;
-  height: 2px;
-  background: var(--blood);
-  box-shadow: 0 0 10px var(--blood-glow);
-}
-.tab-btn:active { background: var(--line-press); }
+.tab-btn.active { color: var(--accent-text); }
+.tab-btn:active { background: var(--surface-2); }
 
-/* --- Fotos de "expediente" en los espacios libres --- */
-.dossier {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: var(--size-dossier-min);
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #000;
-}
-
-.dossier img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Desatura y tinta hacia el rojo para que convivan con el tema en vez de
-     verse como capturas pegadas encima. */
-  filter: grayscale(0.4) contrast(1.1) brightness(0.78) sepia(0.22) hue-rotate(-18deg) saturate(1.15);
-}
-
-.dossier figcaption {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: var(--space-26) 11px var(--space-9);
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--bone-dim);
-  background: linear-gradient(to top, var(--caption-fade) 30%, transparent);
-}
-
-/* --- Retratos chicos en la pestaña Mouse --- */
-.portraits {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-8);
-}
-
-.portrait {
-  position: relative;
-  margin: 0;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #000;
-}
-
-.portrait img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(0.4) contrast(1.1) brightness(0.8) sepia(0.2) hue-rotate(-18deg) saturate(1.15);
-}
-
-.portrait figcaption {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: var(--space-16) var(--space-7) var(--space-6);
-  font-size: 7.5px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bone-dim);
-  background: linear-gradient(to top, var(--caption-fade) 35%, transparent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* En Mouse el contenido llega hasta abajo: se deja aire para que el botón
-   flotante del teclado no tape el último retrato ni los botones. */
-/* En Mouse el botón del teclado va arriba del trackpad (a la derecha),
-   y el trackpad baja lo justo para dejarle su espacio. En las otras
-   pestañas sigue abajo a la derecha. */
-body[data-tab="mouse"] #keyboardFab {
-  top: calc(env(safe-area-inset-top, 0px) + var(--offset-top));
-  right: var(--space-13);
-  bottom: auto;
-}
-.panel[data-panel="mouse"] {
-  padding-top: calc(env(safe-area-inset-top, 0px) + var(--offset-top-mouse));
-}
-
-/* --- Ventana emergente (confirmación de apagado) --- */
+/* --- Ventana de confirmación --- */
 #confirmModal {
   position: fixed;
   inset: 0;
@@ -816,7 +549,7 @@ body[data-tab="mouse"] #keyboardFab {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-24);
+  padding: var(--space-6);
 }
 #confirmModal[hidden] { display: none; }
 
@@ -824,102 +557,55 @@ body[data-tab="mouse"] #keyboardFab {
   position: absolute;
   inset: 0;
   background: var(--backdrop);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .modal-window {
   position: relative;
-  overflow: hidden;
   width: 100%;
   max-width: var(--size-modal-max);
-  min-height: 330px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  border: 1px solid var(--line-strong);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  color: var(--bone);
-  background: var(--bg-modal);
   box-shadow: var(--shadow-modal);
-  animation: modalIn 0.22s ease-out;
-}
-
-/* Capa de imagen propia: así se puede aclarar el zombie sin tocar el texto. */
-.modal-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 34% 38%;
-  filter: brightness(1.9) contrast(1.05) saturate(0.95) sepia(0.12) hue-rotate(-10deg);
-}
-
-.modal-veil {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to bottom,
-    rgba(8, 6, 5, 0.1) 0%,
-    rgba(8, 6, 5, 0.45) 42%,
-    rgba(8, 6, 5, 0.9) 72%,
-    rgba(8, 6, 5, 0.96) 100%
-  );
-}
-
-.modal-body {
-  position: relative;
-  z-index: 2;
-  padding: var(--space-20);
+  animation: modalIn 0.18s ease-out;
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
   to   { opacity: 1; transform: none; }
 }
 
 .modal-kicker {
-  margin: 0 0 var(--space-6);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--blood);
-  text-shadow: 0 0 12px var(--blood-glow);
+  margin: 0 0 var(--space-1);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-text);
 }
 
 .modal-title {
-  margin: 0 0 var(--space-10);
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  margin: 0 0 var(--space-2);
+  font-size: 17px;
+  font-weight: 650;
   line-height: 1.3;
-  text-shadow: 0 2px 12px #000;
 }
 
 .modal-text {
-  margin: 0 0 18px;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  line-height: 1.6;
-  color: var(--bone);
-  text-shadow: 0 1px 8px #000;
+  margin: 0 0 var(--space-5);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
 }
-.modal-text strong {
-  color: var(--amber);
-  font-weight: 800;
-}
+.modal-text strong { color: var(--text); font-weight: 600; }
 
 .modal-actions {
   display: flex;
-  gap: var(--space-8);
+  gap: var(--space-2);
 }
-.modal-actions .chip { flex: 1 1 0; }
-.modal-actions .btn-accent { flex: 1 1 0; text-align: center; }
+.modal-actions .chip,
+.modal-actions .btn-accent { flex: 1 1 0; }
 
 /* --- PIN --- */
 #pinOverlay {
@@ -929,89 +615,77 @@ body[data-tab="mouse"] #keyboardFab {
   align-items: center;
   justify-content: center;
   z-index: var(--z-pin);
-  padding: var(--space-24);
-  background:
-    radial-gradient(circle at 50% 30%, rgba(120, 30, 24, 0.18), transparent 60%),
-    linear-gradient(180deg, var(--bg-top), #060504);
+  padding: var(--space-6);
+  background: var(--bg);
 }
 
 #pinBox {
-  position: relative;
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: var(--space-32) var(--space-26);
+  padding: var(--space-8) var(--space-6);
   width: 100%;
   max-width: var(--size-pin-max);
   text-align: center;
-  box-shadow: var(--shadow-pin);
+  box-shadow: var(--shadow-modal);
 }
-#pinBox::before,
-#pinBox::after {
-  content: '';
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: var(--blood);
-  border-style: solid;
-  pointer-events: none;
+
+#pinEmblem {
+  width: var(--size-emblem);
+  height: var(--size-emblem);
+  margin-bottom: var(--space-3);
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-#pinBox::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-#pinBox::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 #pinBox h1 {
-  margin: 0 0 var(--space-10);
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--bone);
-  text-shadow: 0 0 16px rgba(184, 29, 36, 0.5);
+  margin: 0 0 var(--space-2);
+  font-size: 20px;
+  font-weight: 650;
 }
 #pinBox p {
-  color: var(--bone-dim);
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.6;
-  margin: 0 0 18px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 var(--space-5);
 }
-#pinBox code { color: var(--blood); }
+#pinBox code { color: var(--accent-text); }
 
 #pinInput {
   width: 100%;
-  padding: var(--space-14);
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: var(--well-deep);
-  color: var(--bone);
-  font-size: 22px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--well);
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 500;
   text-align: center;
-  letter-spacing: 0.5em;
-  text-indent: 0.5em;
-  margin-bottom: var(--space-13);
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  margin-bottom: var(--space-3);
 }
+#pinInput:focus { outline: none; border-color: var(--border-strong); }
 
 #pinSubmit {
   width: 100%;
-  padding: var(--space-14);
-  border-radius: var(--radius);
-  border: 1px solid var(--on-blood-edge);
-  background: linear-gradient(180deg, var(--blood-bright), var(--blood));
-  color: var(--on-blood);
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  box-shadow: var(--shadow-submit);
+  min-height: var(--size-touch-min);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 15px;
+  font-weight: 600;
 }
+#pinSubmit:active { filter: brightness(0.85); }
 
 #pinError {
-  color: var(--blood);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  min-height: 16px;
-  margin: var(--space-12) 0 0;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 18px;
+  margin: var(--space-3) 0 0;
 }

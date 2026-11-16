@@ -5,7 +5,11 @@ dist/
 config.json
 # Estado local del apagado programado
 .shutdown-state.json
+# Dispositivos emparejados (hashes de sus tokens)
+devices.json
 # Logs y basura del sistema
 *.log
 Thumbs.db
 desktop.ini
+# Temas locales (por ejemplo, uno con imágenes que no son tuyas)
+themes/

@@ -1,5 +1,5 @@
 # uninstall-autostart.ps1
-# Quita el acceso directo de auto-inicio de Mouse_Final de la carpeta de Inicio.
+# Quita el acceso directo de auto-inicio de Cursor Remoto de la carpeta de Inicio.
 
 $startupDir = [Environment]::GetFolderPath('Startup')
 $shortcutPath = Join-Path $startupDir 'MouseFinalRemote.lnk'

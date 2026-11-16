@@ -1,10 +1,13 @@
-// Convierte tokens.json (el mismo del design system "Mouse Final") en public/tokens.css.
+// Convierte tokens.json (el mismo del design system "Cursor Remoto") en public/tokens.css.
 // Uso: npm run tokens   — después de cambiar cualquier valor en tokens.json.
+// Para un tema: node scripts/build-tokens.js themes/<nombre>/tokens.json themes/<nombre>/tokens.css
 const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const tokens = JSON.parse(fs.readFileSync(path.join(root, 'tokens.json'), 'utf8'));
+const inPath = path.resolve(root, process.argv[2] || 'tokens.json');
+const outPath = path.resolve(root, process.argv[3] || path.join('public', 'tokens.css'));
+const tokens = JSON.parse(fs.readFileSync(inPath, 'utf8'));
 
 // Un alias "{otro-token}" se vuelve var(--otro-token).
 const css = (v) => String(v).replace(/^\{(.+)\}$/, 'var(--$1)');
@@ -32,5 +35,5 @@ const out = `/* ${tokens.name} — generado desde tokens.json con "npm run token
 }
 `;
 
-fs.writeFileSync(path.join(root, 'public', 'tokens.css'), out);
-console.log('public/tokens.css listo');
+fs.writeFileSync(outPath, out);
+console.log(`${path.relative(root, outPath)} listo`);

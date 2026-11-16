@@ -1,102 +1,64 @@
-/* Mouse Final — generado desde tokens.json con "npm run tokens". No editar a mano. */
+/* Cursor Remoto — generado desde tokens.json con "npm run tokens". No editar a mano. */
 
 :root {
   color-scheme: dark;
   /* Color */
-  --bg: #0a0908;
-  --bg-2: #120f0d;
-  --bg-top: #100d0b;
-  --bg-bottom: #070605;
-  --bg-modal: #0a0807;
-  --bg-ember: rgba(120, 30, 24, 0.14);
-  --surface: rgba(24, 20, 17, 0.86);
-  --surface-2: rgba(34, 28, 24, 0.9);
-  --surface-bar: rgba(14, 11, 10, 0.94);
-  --surface-status: rgba(8, 7, 6, 0.95);
-  --well: rgba(0, 0, 0, 0.42);
-  --well-deep: rgba(0, 0, 0, 0.5);
-  --well-soft: rgba(0, 0, 0, 0.36);
-  --backdrop: rgba(4, 3, 3, 0.78);
-  --vignette: rgba(0, 0, 0, 0.62);
-  --caption-fade: rgba(6, 5, 4, 0.92);
-  --line: rgba(206, 188, 160, 0.18);
-  --line-strong: rgba(206, 188, 160, 0.34);
-  --line-track: rgba(206, 188, 160, 0.16);
-  --line-grid: rgba(206, 188, 160, 0.03);
-  --line-press: rgba(206, 188, 160, 0.05);
-  --blood: #b81d24;
-  --blood-bright: #c72932;
-  --blood-deep: #8f151b;
-  --blood-thumb: #d8323a;
-  --blood-tint: rgba(184, 29, 36, 0.1);
-  --blood-dim: rgba(184, 29, 36, 0.16);
-  --blood-glow: rgba(184, 29, 36, 0.45);
-  --blood-edge: rgba(184, 29, 36, 0.5);
-  --on-blood: #ffffff;
-  --on-blood-edge: rgba(255, 190, 185, 0.25);
-  --thumb-edge: rgba(255, 210, 200, 0.35);
-  --amber: #c9922a;
-  --amber-dim: rgba(201, 146, 42, 0.1);
-  --amber-line: rgba(201, 146, 42, 0.45);
-  --amber-edge: rgba(201, 146, 42, 0.5);
-  --herb: #5f9147;
-  --bone: #ded6c8;
-  --bone-dim: #8c8377;
+  --bg: #0f1012;
+  --surface: #17191c;
+  --surface-2: #1e2125;
+  --surface-press: #262a30;
+  --surface-bar: rgba(15, 16, 18, 0.88);
+  --well: #0b0c0e;
+  --backdrop: rgba(0, 0, 0, 0.6);
+  --border: #25282d;
+  --border-strong: #343941;
+  --text: #e8e9ec;
+  --text-dim: #8e949d;
+  --accent: #4568f0;
+  --accent-text: #8aa2ff;
+  --accent-soft: rgba(69, 104, 240, 0.16);
+  --on-accent: #ffffff;
+  --ok: #3fb950;
+  --warn: #d29922;
+  --warn-soft: rgba(210, 153, 34, 0.12);
+  --danger: #f85149;
+  --danger-soft: rgba(248, 81, 73, 0.12);
 
   /* Tipografía */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
 
   /* spacing */
-  --space-2: 2px;
-  --space-4: 4px;
-  --space-6: 6px;
-  --space-7: 7px;
-  --space-8: 8px;
-  --space-9: 9px;
-  --space-10: 10px;
-  --space-12: 12px;
-  --space-13: 13px;
-  --space-14: 14px;
-  --space-16: 16px;
-  --space-20: 20px;
-  --space-24: 24px;
-  --space-26: 26px;
-  --space-32: 32px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
 
   /* radius */
-  --radius: 3px;
-  --radius-thumb: 1px;
-  --radius-none: 0px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
 
   /* size */
-  --size-frame-corner: 12px;
-  --size-icon: 23px;
+  --size-icon: 22px;
   --size-icon-big: 28px;
-  --size-tab-icon: 22px;
-  --size-card-icon: 30px;
-  --size-relic: 54px;
-  --size-emblem: 72px;
-  --size-fab: 50px;
-  --size-dpad-cell: 70px;
+  --size-card-icon: 18px;
+  --size-emblem: 40px;
+  --size-fab: 52px;
+  --size-dpad-cell: 72px;
   --size-touch-min: 44px;
   --size-trackpad-min: 220px;
-  --size-dossier-min: 130px;
   --size-modal-max: 340px;
   --size-pin-max: 320px;
   --offset-top: 44px;
-  --offset-top-mouse: 104px;
-  --offset-bottom: 106px;
+  --offset-top-mouse: 108px;
+  --offset-bottom: 100px;
 
   /* shadow */
-  --shadow-card: 0 16px 40px -28px #000000;
-  --shadow-press: 0 0 18px -4px rgba(184, 29, 36, 0.45);
-  --shadow-accent: 0 0 18px -6px rgba(184, 29, 36, 0.45);
-  --shadow-submit: 0 0 20px -6px rgba(184, 29, 36, 0.45);
-  --shadow-fab: 0 0 24px -6px rgba(184, 29, 36, 0.45), 0 10px 22px -12px #000000;
-  --shadow-thumb: 0 0 14px -2px rgba(184, 29, 36, 0.45);
-  --shadow-modal: 0 28px 70px -24px #000000, 0 0 40px -18px rgba(184, 29, 36, 0.45);
-  --shadow-pin: 0 24px 60px -30px #000000;
-  --shadow-trackpad: inset 0 0 60px rgba(0, 0, 0, 0.6);
+  --shadow-fab: 0 10px 24px -10px rgba(0, 0, 0, 0.7);
+  --shadow-modal: 0 24px 60px -20px rgba(0, 0, 0, 0.8);
 
   /* zIndex */
   --z-tabbar: 20;
@@ -105,12 +67,7 @@
   --z-keyboard: 40;
   --z-pin: 100;
   --z-modal: 120;
-  --z-vignette: 190;
-  --z-grain: 200;
 
   /* opacity */
-  --opacity-grain: 0.055;
-  --opacity-frame: 0.85;
-  --opacity-relics: 0.92;
-  --opacity-disabled: 0.35;
+  --opacity-disabled: 0.4;
 }
