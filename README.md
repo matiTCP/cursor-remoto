@@ -8,13 +8,29 @@ Control remoto personal de mouse y teclado para tu PC con Windows desde el celul
   <img src="docs/screenshots/sistema.jpg" width="250" alt="Pestaña Sistema: apagado automático con cuenta regresiva, brillo y sonidos" />
 </p>
 
+## Instalar
+
+Solo para **Windows 10/11**. El celular puede ser iPhone o Android; no necesita instalar nada.
+
+1. Descarga **`CursorRemoto-Setup-<versión>.exe`** desde la [última versión](https://github.com/matiTCP/cursor-remoto/releases/latest).
+2. Ábrelo. Como el instalador no está firmado, Windows muestra "Windows protegió tu PC": toca **Más información → Ejecutar de todas formas**.
+3. Acepta el permiso de administrador. Se usa para instalar en Archivos de programa y permitir la conexión del celular en el Firewall (solo en redes privadas).
+4. Al terminar se abre Cursor Remoto con un **código QR**. Con el celular conectado al **mismo WiFi** que el PC, escanéalo con la cámara y listo.
+5. En el iPhone, toca **Compartir → Agregar a pantalla de inicio** para tenerlo como app. Esa app pide el **PIN** que aparece en la ventana del PC.
+
+La app queda en la bandeja del sistema (junto al reloj); cerrar la ventana no la apaga. En su ventana puedes activar **Iniciar con Windows**, cambiar el PIN y ver o desvincular los celulares conectados.
+
+Si el celular no conecta, revisa que Windows tenga tu WiFi como **red privada** (Configuración → Red e Internet → tu red → Tipo de perfil de red). En redes públicas el Firewall bloquea la conexión.
+
 ## Cómo funciona
 
 - Un servidor Node.js (`server.js`) corre en tu PC y expone una página web + WebSocket en tu red local.
 - Un agente en PowerShell (`agent/input-agent.ps1`) traduce los comandos recibidos en movimientos de mouse y teclas reales, usando solo APIs de Windows (sin instalar nada extra ni compilar módulos nativos).
 - Desde el iPhone abres la IP de tu PC en Safari y tienes un trackpad táctil, teclado nativo y una grilla de botones personalizables.
 
-## Primer uso
+## Usarlo desde el código
+
+Si prefieres no instalar nada y tienes Node.js:
 
 ```bash
 npm install
@@ -37,7 +53,7 @@ Si Windows pregunta si permitir el acceso de Node.js a la red (Firewall de Windo
 
 ## App de escritorio (beta)
 
-En vez de la consola, puedes usar la app de escritorio, que corre el mismo servidor con una ventana y un ícono en la bandeja del sistema:
+Es lo que trae el instalador. Desde el código, en vez de la consola, puedes correr la app de escritorio, que usa el mismo servidor con una ventana y un ícono en la bandeja del sistema:
 
 ```bash
 npm install
