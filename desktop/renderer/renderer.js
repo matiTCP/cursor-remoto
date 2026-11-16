@@ -38,14 +38,24 @@ function timeAgo(ts) {
   return `hace ${d} día${d > 1 ? 's' : ''}`;
 }
 
+const DEVICE_ICONS = {
+  phone: '<svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+  tablet: '<svg viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+  desktop: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+};
+
 function renderDevices(devices) {
   el.devicesEmpty.hidden = devices.length > 0;
   el.revokeAll.hidden = devices.length < 2;
   el.deviceList.replaceChildren(...devices.map((d) => {
     const li = document.createElement('li');
 
-    const dot = document.createElement('span');
-    dot.className = `dev-dot${d.online ? ' on' : ''}`;
+    // Ícono de celular/tablet/PC con un punto verde si está conectado ahora.
+    const icon = document.createElement('span');
+    icon.className = `dev-icon${d.online ? ' on' : ''}`;
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = /PC|Mac|Linux/.test(d.name) ? DEVICE_ICONS.desktop
+      : /iPad|Tablet/.test(d.name) ? DEVICE_ICONS.tablet : DEVICE_ICONS.phone;
 
     const info = document.createElement('div');
     info.className = 'dev-info';
@@ -53,7 +63,7 @@ function renderDevices(devices) {
     name.className = 'dev-name';
     name.textContent = d.name;
     const meta = document.createElement('div');
-    meta.className = 'dev-meta';
+    meta.className = `dev-meta${d.online ? ' on' : ''}`;
     meta.textContent = d.online ? 'Conectado ahora' : `Última vez ${timeAgo(d.lastSeen)}`;
     info.append(name, meta);
 
@@ -68,7 +78,7 @@ function renderDevices(devices) {
       }
     });
 
-    li.append(dot, info, forget);
+    li.append(icon, info, forget);
     return li;
   }));
 }
@@ -102,7 +112,7 @@ function render(s) {
     el.statusText.textContent = 'Detenido';
   }
   el.toggle.textContent = s.running ? 'Detener' : 'Iniciar';
-  el.toggle.classList.toggle('ghost', s.running);
+  el.toggle.classList.toggle('primary', !s.running);
 
   el.banner.hidden = !s.error;
   el.banner.textContent = s.error || '';

@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, clipboard, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, nativeTheme, clipboard, shell, screen } = require('electron');
 const QRCode = require('qrcode');
 const { MouseServer, lanAddresses } = require('../src/server');
 
@@ -148,17 +148,39 @@ function iconImage(size) {
   return nativeImage.createFromPath(path.join(ROOT_DIR, 'public', 'icon-192.png')).resize({ width: size, height: size });
 }
 
+// La ventana vuelve a abrir con el tamaño y la posición en que la dejaste,
+// siempre que siga entrando en alguna pantalla (por si se desconectó un monitor).
+function savedBounds() {
+  const b = settings.bounds;
+  if (!b || ![b.x, b.y, b.width, b.height].every(Number.isFinite)) return {};
+  const area = screen.getDisplayMatching(b).workArea;
+  const visible = b.x < area.x + area.width - 80 && b.x + b.width > area.x + 80
+    && b.y >= area.y - 10 && b.y < area.y + area.height - 80;
+  return visible ? b : { width: b.width, height: b.height };
+}
+
+let boundsTimer = null;
+function rememberBounds() {
+  clearTimeout(boundsTimer);
+  boundsTimer = setTimeout(() => {
+    if (!win || win.isDestroyed() || win.isMinimized() || win.isMaximized()) return;
+    settings.bounds = win.getBounds();
+    saveSettings();
+  }, 400);
+}
+
 function createWindow() {
   win = new BrowserWindow({
-    width: 440,
-    height: 760,
-    minWidth: 380,
-    minHeight: 560,
+    width: 900,
+    height: 660,
+    minWidth: 400,
+    minHeight: 520,
+    ...savedBounds(),
     show: false,
     title: 'Cursor Remoto',
     icon: iconImage(64),
     autoHideMenuBar: true,
-    backgroundColor: '#16161a',
+    backgroundColor: '#0f1012', // --bg de tokens.json, para que no parpadee al abrir
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -183,6 +205,9 @@ function createWindow() {
       win.hide();
     }
   });
+
+  win.on('resize', rememberBounds);
+  win.on('move', rememberBounds);
 
   win.once('ready-to-show', () => { if (!START_HIDDEN) win.show(); });
 }
@@ -282,6 +307,8 @@ app.on('second-instance', showWindow);
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('cl.cursorremoto.desktop');
+  // La identidad es oscura: barra de título y diálogos (confirmar) también en oscuro.
+  nativeTheme.themeSource = 'dark';
 
   const userData = app.getPath('userData');
   fs.mkdirSync(userData, { recursive: true });

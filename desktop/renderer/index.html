@@ -5,30 +5,48 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cursor Remoto</title>
+  <!-- Mismos colores y medidas que la app del celular (public/tokens.json). -->
+  <link rel="stylesheet" href="../../public/tokens.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
+    <img class="app-icon" src="../../public/icon-192.png" alt="">
     <div class="brand">
-      <span class="dot" id="statusDot"></span>
-      <div>
-        <h1>Cursor Remoto</h1>
-        <p class="sub" id="statusText">Iniciando…</p>
+      <h1>Cursor Remoto</h1>
+      <div class="status" id="statusDot">
+        <svg class="ecg" viewBox="0 0 72 24" width="44" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1 12h13l3-7 4 14 3-7h6l3-5 4 10 3-5h29" />
+        </svg>
+        <span id="statusText">Iniciando…</span>
       </div>
     </div>
     <button class="btn" id="toggleServer" type="button">Detener</button>
   </header>
 
-  <div class="banner" id="errorBanner" hidden></div>
+  <div class="banner" id="errorBanner" role="alert" hidden></div>
 
-  <main>
-    <section class="card qr-card">
-      <h2>Conecta tu celular</h2>
+  <main class="layout">
+    <!-- Columna izquierda: lo principal, conectar el celular -->
+    <section class="card connect">
+      <h2 class="card-title">
+        <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+        Conecta tu celular
+      </h2>
+
       <div class="qr-wrap" id="qrWrap">
         <img id="qrImg" alt="Código QR para abrir Cursor Remoto en el celular">
-        <div class="qr-empty" id="qrEmpty">El servidor está detenido</div>
+        <div class="qr-empty" id="qrEmpty">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>
+          El servidor está detenido
+        </div>
       </div>
-      <p class="hint">Escanea el código con la cámara del celular: queda conectado sin escribir el PIN. Tiene que estar en la <strong>misma red WiFi</strong> que este PC.</p>
+
+      <ol class="steps">
+        <li><span>Conecta el celular a la <strong>misma red WiFi</strong> que este PC.</span></li>
+        <li><span>Abre la cámara y escanea el código.</span></li>
+        <li><span>Toca el enlace: queda conectado sin escribir el PIN.</span></li>
+      </ol>
       <p class="hint small" id="qrExpiry"></p>
 
       <div class="url-row">
@@ -36,76 +54,91 @@
         <button class="btn ghost small" id="copyUrl" type="button">Copiar</button>
       </div>
 
-      <label class="field" id="addressField" hidden>
+      <label class="field compact" id="addressField" hidden>
         <span>Red</span>
         <select id="addressSelect"></select>
       </label>
 
       <details class="install">
         <summary>Instalarla como app en el celular</summary>
-        <ol>
-          <li><strong>iPhone (Safari):</strong> toca Compartir <span class="kbd">⬆︎</span> → “Agregar a pantalla de inicio”.</li>
-          <li><strong>Android (Chrome):</strong> menú <span class="kbd">⋮</span> → “Agregar a la pantalla principal”.</li>
-        </ol>
+        <ul>
+          <li><strong>iPhone (Safari):</strong> Compartir → “Agregar a pantalla de inicio”.</li>
+          <li><strong>Android (Chrome):</strong> menú ⋮ → “Agregar a la pantalla principal”.</li>
+        </ul>
       </details>
     </section>
 
-    <section class="card">
-      <h2>PIN de acceso</h2>
-      <p class="hint">Para conectar un celular sin escanear el QR (por ejemplo, la app instalada en la pantalla de inicio del iPhone). Cambiarlo no desconecta a los que ya están emparejados.</p>
-      <form class="inline" id="pinForm" autocomplete="off">
-        <div class="pin-input">
-          <input id="pinInput" type="password" inputmode="numeric" pattern="\d*" maxlength="12" aria-label="PIN">
-          <button class="icon-btn" id="pinReveal" type="button" aria-label="Mostrar PIN">Ver</button>
+    <!-- Columna derecha: ajustes -->
+    <div class="side">
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title">
+            <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Dispositivos
+          </h2>
+          <button class="link-btn" id="revokeAll" type="button" hidden>Olvidar todos</button>
         </div>
-        <button class="btn" type="submit">Guardar</button>
-      </form>
-      <p class="msg" id="pinMsg" role="status"></p>
-    </section>
+        <ul class="devices" id="deviceList"></ul>
+        <p class="hint" id="devicesEmpty">Todavía no hay celulares emparejados. Escanea el QR para agregar uno.</p>
+      </section>
 
-    <section class="card">
-      <div class="card-head">
-        <h2>Dispositivos</h2>
-        <button class="link-btn" id="revokeAll" type="button" hidden>Olvidar todos</button>
-      </div>
-      <ul class="devices" id="deviceList"></ul>
-      <p class="hint" id="devicesEmpty">Todavía no hay celulares emparejados.</p>
-    </section>
+      <section class="card">
+        <h2 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg>
+          PIN de acceso
+        </h2>
+        <form class="inline" id="pinForm" autocomplete="off">
+          <div class="pin-input">
+            <input id="pinInput" type="password" inputmode="numeric" pattern="\d*" maxlength="12" aria-label="PIN" aria-describedby="pinHint">
+            <button class="icon-btn" id="pinReveal" type="button" aria-label="Mostrar PIN">Ver</button>
+          </div>
+          <button class="btn primary" type="submit">Guardar</button>
+        </form>
+        <p class="msg" id="pinMsg" role="status"></p>
+        <p class="hint" id="pinHint">Para conectar sin el QR, por ejemplo desde la app instalada en el iPhone. Cambiarlo no desconecta a los que ya están emparejados.</p>
+      </section>
 
-    <section class="card">
-      <h2>Opciones</h2>
+      <section class="card">
+        <h2 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+          Opciones
+        </h2>
 
-      <label class="toggle">
-        <span>
-          <strong>Iniciar con Windows</strong>
-          <small>Arranca en segundo plano al iniciar sesión.</small>
-        </span>
-        <input type="checkbox" id="autostart">
-      </label>
-
-      <label class="toggle">
-        <span>
-          <strong>Historial del portapapeles</strong>
-          <small>Guarda el texto que copias en el PC para pegarlo desde el celular.</small>
-        </span>
-        <input type="checkbox" id="clipboard">
-      </label>
-
-      <form class="inline port" id="portForm" autocomplete="off">
-        <label class="field">
-          <span>Puerto</span>
-          <input id="portInput" type="number" min="1024" max="65535">
+        <label class="toggle">
+          <span>
+            <strong>Iniciar con Windows</strong>
+            <small>Arranca en segundo plano al iniciar sesión.</small>
+          </span>
+          <input type="checkbox" role="switch" id="autostart">
         </label>
-        <button class="btn ghost" type="submit">Aplicar</button>
-      </form>
-      <p class="msg" id="portMsg" role="status"></p>
-    </section>
-  </main>
 
-  <footer class="foot">
-    <span id="version"></span>
-    <span>Cerrar la ventana la deja en la bandeja del sistema.</span>
-  </footer>
+        <label class="toggle">
+          <span>
+            <strong>Historial del portapapeles</strong>
+            <small>Guarda el texto que copias en el PC para pegarlo desde el celular.</small>
+          </span>
+          <input type="checkbox" role="switch" id="clipboard">
+        </label>
+
+        <details class="advanced">
+          <summary>Avanzado</summary>
+          <form class="inline" id="portForm" autocomplete="off">
+            <label class="field">
+              <span>Puerto</span>
+              <input id="portInput" type="number" min="1024" max="65535">
+            </label>
+            <button class="btn" type="submit">Aplicar</button>
+          </form>
+          <p class="msg" id="portMsg" role="status"></p>
+        </details>
+      </section>
+
+      <footer class="foot">
+        <span id="version"></span>
+        <span>Al cerrar la ventana, Cursor Remoto sigue en la bandeja del sistema.</span>
+      </footer>
+    </div>
+  </main>
 
   <script src="renderer.js"></script>
 </body>
