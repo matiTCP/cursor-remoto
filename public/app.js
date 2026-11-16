@@ -132,27 +132,71 @@
     statusText.textContent = text;
   }
 
-  function getStoredPin() {
-    try { return localStorage.getItem('mf_pin'); } catch { return null; }
+  // El celular guarda un token de dispositivo (no el PIN). Se obtiene la primera
+  // vez escaneando el QR de la app de la PC o ingresando el PIN.
+  const store = {
+    get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch {} },
+    remove(key) { try { localStorage.removeItem(key); } catch {} },
+  };
+
+  // Código de emparejamiento que trae el link del QR (#pair=...). Se usa una sola
+  // vez y se borra de la barra de direcciones.
+  let pairToken = new URLSearchParams(location.hash.slice(1)).get('pair');
+  function clearPairHash() {
+    pairToken = null;
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   }
-  function storePin(pin) {
-    try { localStorage.setItem('mf_pin', pin); } catch {}
+
+  function sendAuth() {
+    const device = store.get('mf_device');
+    const legacyPin = store.get('mf_pin'); // versiones anteriores guardaban el PIN
+    if (pendingPin) {
+      ws.send(JSON.stringify({ type: 'auth', pin: pendingPin }));
+    } else if (pairToken) {
+      ws.send(JSON.stringify({ type: 'pair', token: pairToken }));
+    } else if (device) {
+      ws.send(JSON.stringify({ type: 'auth', device }));
+    } else if (legacyPin) {
+      ws.send(JSON.stringify({ type: 'auth', pin: legacyPin }));
+    } else {
+      setStatus('caution', 'Caution · Identifícate');
+      showPinOverlay();
+      return;
+    }
+    setStatus('caution', 'Caution · Verificando…');
+  }
+
+  function authFailed(msg) {
+    authed = false;
+    const wasPin = !!pendingPin || msg.reason === 'pin';
+    pendingPin = null;
+    store.remove('mf_pin');
+
+    if (msg.reason === 'device') {
+      store.remove('mf_device');
+      pinError.textContent = 'Este dispositivo fue desvinculado. Ingresa el código o escanea el QR de la PC.';
+    } else if (msg.reason === 'pair') {
+      clearPairHash();
+      pinError.textContent = 'El código QR venció. Escanéalo de nuevo o ingresa el PIN.';
+    } else if (msg.reason === 'locked') {
+      clearPairHash();
+      pinError.textContent = `Demasiados intentos. Espera ${msg.retryIn} s.`;
+    } else {
+      pinError.textContent = msg.retryIn
+        ? `Código incorrecto. Bloqueado por ${msg.retryIn} s.`
+        : 'Código incorrecto. Acceso denegado.';
+    }
+    if (wasPin || msg.reason !== 'device') sfx('error');
+    showPinOverlay();
+    setStatus('danger', 'Danger · Acceso denegado');
   }
 
   function connect() {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     ws = new WebSocket(`${proto}://${location.host}/ws`);
 
-    ws.addEventListener('open', () => {
-      setStatus('caution', 'Caution · Verificando…');
-      const pin = pendingPin || getStoredPin();
-      if (pin) {
-        ws.send(JSON.stringify({ type: 'auth', pin }));
-      } else {
-        setStatus('caution', 'Caution · Identifícate');
-        showPinOverlay();
-      }
-    });
+    ws.addEventListener('open', sendAuth);
 
     ws.addEventListener('message', (ev) => {
       const msg = JSON.parse(ev.data);
@@ -160,20 +204,18 @@
       if (msg.type === 'auth') {
         if (msg.ok) {
           authed = true;
-          if (pendingPin) {
-            storePin(pendingPin);
+          if (msg.device) {
+            store.set('mf_device', msg.device);
             sfx('select');
           }
+          store.remove('mf_pin');
+          pendingPin = null;
+          clearPairHash();
+          pinError.textContent = '';
           pinOverlay.style.display = 'none';
           setStatus('fine', 'Fine · Enlace establecido');
         } else {
-          authed = false;
-          pendingPin = null;
-          try { localStorage.removeItem('mf_pin'); } catch {}
-          pinError.textContent = 'Código incorrecto. Acceso denegado.';
-          sfx('error');
-          showPinOverlay();
-          setStatus('danger', 'Danger · Acceso denegado');
+          authFailed(msg);
         }
       } else if (msg.type === 'shutdown') {
         shutdownScheduledAt = msg.scheduledAt;

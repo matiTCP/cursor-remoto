@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mouse Final</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="dot" id="statusDot"></span>
+      <div>
+        <h1>Mouse Final</h1>
+        <p class="sub" id="statusText">Iniciando…</p>
+      </div>
+    </div>
+    <button class="btn" id="toggleServer" type="button">Detener</button>
+  </header>
+
+  <div class="banner" id="errorBanner" hidden></div>
+
+  <main>
+    <section class="card qr-card">
+      <h2>Conectá tu celular</h2>
+      <div class="qr-wrap" id="qrWrap">
+        <img id="qrImg" alt="Código QR para abrir Mouse Final en el celular">
+        <div class="qr-empty" id="qrEmpty">El servidor está detenido</div>
+      </div>
+      <p class="hint">Escaneá el código con la cámara del celular: queda conectado sin escribir el PIN. Tiene que estar en la <strong>misma red WiFi</strong> que esta PC.</p>
+      <p class="hint small" id="qrExpiry"></p>
+
+      <div class="url-row">
+        <code id="urlText">—</code>
+        <button class="btn ghost small" id="copyUrl" type="button">Copiar</button>
+      </div>
+
+      <label class="field" id="addressField" hidden>
+        <span>Red</span>
+        <select id="addressSelect"></select>
+      </label>
+
+      <details class="install">
+        <summary>Instalarla como app en el celular</summary>
+        <ol>
+          <li><strong>iPhone (Safari):</strong> tocá Compartir <span class="kbd">⬆︎</span> → “Agregar a pantalla de inicio”.</li>
+          <li><strong>Android (Chrome):</strong> menú <span class="kbd">⋮</span> → “Agregar a la pantalla principal”.</li>
+        </ol>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>PIN de acceso</h2>
+      <p class="hint">Para conectar un celular sin escanear el QR (por ejemplo, la app instalada en la pantalla de inicio del iPhone). Cambiarlo no desconecta a los que ya están emparejados.</p>
+      <form class="inline" id="pinForm" autocomplete="off">
+        <div class="pin-input">
+          <input id="pinInput" type="password" inputmode="numeric" pattern="\d*" maxlength="12" aria-label="PIN">
+          <button class="icon-btn" id="pinReveal" type="button" aria-label="Mostrar PIN">Ver</button>
+        </div>
+        <button class="btn" type="submit">Guardar</button>
+      </form>
+      <p class="msg" id="pinMsg" role="status"></p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Dispositivos</h2>
+        <button class="link-btn" id="revokeAll" type="button" hidden>Olvidar todos</button>
+      </div>
+      <ul class="devices" id="deviceList"></ul>
+      <p class="hint" id="devicesEmpty">Todavía no hay celulares emparejados.</p>
+    </section>
+
+    <section class="card">
+      <h2>Opciones</h2>
+
+      <label class="toggle">
+        <span>
+          <strong>Iniciar con Windows</strong>
+          <small>Arranca en segundo plano al iniciar sesión.</small>
+        </span>
+        <input type="checkbox" id="autostart">
+      </label>
+
+      <label class="toggle">
+        <span>
+          <strong>Historial del portapapeles</strong>
+          <small>Guarda el texto que copiás en la PC para pegarlo desde el celular.</small>
+        </span>
+        <input type="checkbox" id="clipboard">
+      </label>
+
+      <form class="inline port" id="portForm" autocomplete="off">
+        <label class="field">
+          <span>Puerto</span>
+          <input id="portInput" type="number" min="1024" max="65535">
+        </label>
+        <button class="btn ghost" type="submit">Aplicar</button>
+      </form>
+      <p class="msg" id="portMsg" role="status"></p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span id="version"></span>
+    <span>Cerrar la ventana la deja en la bandeja del sistema.</span>
+  </footer>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

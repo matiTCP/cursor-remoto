@@ -29,6 +29,39 @@ Mouse_Final escuchando en el puerto 5577
 
 Si Windows te pregunta si permitir el acceso de Node.js a la red (Firewall de Windows), elegí **Permitir** (al menos para redes privadas).
 
+## App de escritorio (beta)
+
+En vez de la consola, se puede usar la app de escritorio, que corre el mismo servidor con una ventana e ícono en la bandeja del sistema:
+
+```bash
+npm install
+npm run desktop
+```
+
+- Muestra un **código QR** para abrir la app en el celular escaneándolo, la dirección para copiar y, si la PC tiene varias redes (WSL, VPN…), un selector de cuál usar.
+- **Emparejar escaneando el QR**: el QR lleva un código de emparejamiento que se renueva cada 10 minutos (una foto vieja del QR no sirve), así que el celular queda conectado sin escribir nada. El PIN queda como alternativa (por ejemplo, para la app agregada a la pantalla de inicio del iPhone, que no comparte datos con Safari).
+- Lista de **dispositivos emparejados**, con botón para olvidar uno o todos (se desconectan al instante).
+- Permite **cambiar el PIN** (no afecta a los ya emparejados), el puerto, **iniciar con Windows** y activar o desactivar el historial del portapapeles. Si el PIN es el de ejemplo (`1234`), la app lo reemplaza por uno al azar.
+- Cerrar la ventana la deja en la bandeja; para salir del todo: clic derecho en el ícono → Salir.
+- Su configuración vive en `%APPDATA%\Mouse Final\config.json` (separada del `config.json` del repo, que sigue usando `npm start`). La primera vez copia el `config.json` del repo si existe.
+- El código está en `desktop/` (Electron) y el servidor compartido en `src/server.js`.
+
+### Generar el instalador
+
+```bash
+npm run dist
+```
+
+Crea `dist/MouseFinal-Setup-<versión>.exe`, un instalador de Windows que trae todo adentro (el usuario no necesita Node.js). Al instalar:
+
+- Pide permiso de administrador una vez, para instalar en Archivos de programa y agregar la regla del Firewall de Windows (solo redes privadas), así no aparece el aviso al abrir la app.
+- Crea accesos directos en Inicio y Escritorio, y abre la app al terminar.
+- Al desinstalar, se borran la regla del Firewall y el inicio automático. La configuración y los dispositivos emparejados (`%APPDATA%\Mouse Final`) se conservan por si se reinstala.
+
+El instalador no está firmado: Windows SmartScreen muestra "Windows protegió tu PC" → **Más información** → **Ejecutar de todas formas**. Para quitar ese aviso hace falta un certificado de firma de código.
+
+La configuración de empaquetado está en `package.json` (`"build"`) y los pasos extra del instalador en `build/installer.nsh`.
+
 ## Estética
 
 Tema inspirado en Resident Evil: negro cálido, rojo sangre, texto hueso en mayúsculas espaciadas, esquinas rectas con marcos de expediente, grano de película y viñeta (ambos en `body::before` / `body::after`, sin bloquear toques).
@@ -175,5 +208,7 @@ La licencia **no cubre las imágenes de `public/img/`** (fotos y sprites de Resi
 ## Seguridad
 
 - Pensado para tu red WiFi doméstica, no para exponerlo a internet.
+- El celular guarda un **token de dispositivo**, no el PIN. En la PC solo se guarda su hash (`devices.json`).
+- **Límite de intentos**: después de 5 PIN o QR incorrectos desde una misma IP se bloquea 30 s, y cada fallo extra duplica la espera (hasta 15 min).
 - Cambiá el PIN en `config.json` si querés más privacidad (cualquiera en tu WiFi que sepa la IP y el puerto podría intentar conectarse sin él).
 - No lo publiques con port-forwarding en el router sin agregar HTTPS y una autenticación más fuerte.
