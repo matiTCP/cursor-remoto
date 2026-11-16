@@ -1,6 +1,6 @@
 # install-autostart.ps1
 # Crea un acceso directo en la carpeta de Inicio de Windows que arranca el
-# servidor Mouse_Final al iniciar sesion, sin mostrar ninguna ventana de consola.
+# servidor Cursor Remoto al iniciar sesion, sin mostrar ninguna ventana de consola.
 
 $ErrorActionPreference = 'Stop'
 
@@ -16,7 +16,7 @@ $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $wscriptPath
 $shortcut.Arguments = "`"$vbsPath`""
 $shortcut.WorkingDirectory = $projectDir
-$shortcut.Description = 'Arranca el servidor de control remoto Mouse Final'
+$shortcut.Description = 'Arranca el servidor de control remoto Cursor Remoto'
 $shortcut.Save()
 
 Write-Output "Listo. Se creo '$shortcutPath'."

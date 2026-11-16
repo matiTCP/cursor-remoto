@@ -1,4 +1,4 @@
-// Convierte tokens.json (el mismo del design system "Mouse Final") en public/tokens.css.
+// Convierte tokens.json (el mismo del design system "Cursor Remoto") en public/tokens.css.
 // Uso: npm run tokens   — después de cambiar cualquier valor en tokens.json.
 // Para un tema: node scripts/build-tokens.js themes/<nombre>/tokens.json themes/<nombre>/tokens.css
 const fs = require('fs');

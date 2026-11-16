@@ -357,7 +357,7 @@ const config = loadConfig();
 const PORT = config.port || 5577;
 
 server.listen(PORT, () => {
-  console.log(`Mouse_Final escuchando en el puerto ${PORT}`);
+  console.log(`Cursor Remoto escuchando en el puerto ${PORT}`);
   const nets = os.networkInterfaces();
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {

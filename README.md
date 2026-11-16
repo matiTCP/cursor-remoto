@@ -1,4 +1,4 @@
-# Mouse Final
+# Cursor Remoto
 
 Control remoto personal de mouse y teclado para tu PC con Windows desde el celular, pensado para usar el PC como "tele" desde la cama.
 
@@ -18,7 +18,7 @@ npm start
 La consola va a mostrar algo como:
 
 ```
-Mouse_Final escuchando en el puerto 5577
+Cursor Remoto escuchando en el puerto 5577
   -> Abre desde el celular (misma red WiFi): http://192.168.x.x:5577
 ```
 

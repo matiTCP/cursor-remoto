@@ -1,5 +1,5 @@
 {
-  "name": "mouse-final",
+  "name": "cursor-remoto",
   "version": "1.0.0",
   "description": "Control remoto personal de mouse y teclado desde el celular",
   "main": "server.js",

@@ -1,6 +1,6 @@
 {
-  "name": "Mouse Final",
-  "short_name": "Mouse Final",
+  "name": "Cursor Remoto",
+  "short_name": "Cursor Remoto",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0f1012",
