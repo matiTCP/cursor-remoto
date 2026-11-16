@@ -387,6 +387,7 @@ button, input, textarea { font-family: inherit; }
   transition: background 0.12s;
 }
 .chip:active { background: var(--surface-press); }
+.chip-row .chip { flex: 1 1 0; padding: var(--space-2) var(--space-1); white-space: nowrap; }
 
 .shutdown-row {
   display: flex;
