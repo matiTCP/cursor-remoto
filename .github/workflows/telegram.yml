@@ -1,0 +1,80 @@
+# Envía a Telegram un resumen de cada push y de cada pull request
+# (abierto, mergeado o cerrado). Copia este archivo a .github/workflows/
+# de cada proyecto y configura los secrets TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID.
+name: Notificar a Telegram
+
+on:
+  push:
+  pull_request:
+    types: [opened, closed, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Armar y enviar mensaje
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EVENTO: ${{ github.event_name }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "::warning::Faltan los secrets TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID; no se envía nada."
+            exit 0
+          fi
+
+          TEXTO=$(jq -r --arg evento "$EVENTO" '
+            def esc: tostring | gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
+            .repository.full_name as $repo
+            | if $evento == "push" then
+                if .deleted then empty else
+                (.ref | sub("^refs/(heads|tags)/"; "")) as $rama
+                | "📦 <b>\($repo | esc)</b> · rama <code>\($rama | esc)</code>\n"
+                  + "\(.commits | length) commit(s) de \(.pusher.name // "?" | esc)\n\n"
+                  + ([.commits[] |
+                      (.message | split("\n")) as $l
+                      | "🔹 <a href=\"\(.url)\">\(.id[0:7])</a> <b>\($l[0] | esc)</b>"
+                        + ( [$l[1:][] | select(test("^(Co-Authored-By|Claude-Session):") | not)]
+                            | join("\n") | sub("^\\s+"; "") | sub("\\s+$"; "")
+                            | if . == "" then "" else "\n" + esc end )
+                    ] | join("\n\n"))
+                  + "\n\n<a href=\"\(.compare)\">Ver cambios</a>"
+                end
+              else
+                .pull_request as $pr
+                | (if .action == "closed" then (if $pr.merged then "✅ PR mergeado" else "❌ PR cerrado" end)
+                   elif .action == "reopened" then "🔁 PR reabierto"
+                   else "🆕 PR abierto" end) as $estado
+                | "\($estado) en <b>\($repo | esc)</b>\n"
+                  + "<b>#\($pr.number) \($pr.title | esc)</b>\n"
+                  + "<code>\($pr.head.ref | esc)</code> → <code>\($pr.base.ref | esc)</code>\n\n"
+                  + (($pr.body // "") | esc)
+                  + "\n\n<a href=\"\($pr.html_url)\">Abrir PR</a>"
+              end
+          ' "$GITHUB_EVENT_PATH")
+
+          if [ -z "$TEXTO" ]; then echo "Nada que notificar."; exit 0; fi
+
+          # Telegram admite hasta 4096 caracteres por mensaje.
+          if [ "${#TEXTO}" -gt 3900 ]; then
+            TEXTO="${TEXTO:0:3900}"$'\n\n… (mensaje recortado)'
+          fi
+
+          RESPUESTA=$(curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${TEXTO}" \
+            --data-urlencode "parse_mode=HTML" \
+            --data-urlencode "disable_web_page_preview=true")
+
+          if ! echo "$RESPUESTA" | jq -e '.ok' > /dev/null; then
+            # Si el HTML quedó roto (p. ej. por el recorte), reintenta como texto plano.
+            echo "Telegram rechazó el HTML, reintento en texto plano: $(echo "$RESPUESTA" | jq -r '.description')"
+            PLANO=$(echo "$TEXTO" | sed -e 's/<[^>]*>//g' -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g')
+            curl -sS -f -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+              --data-urlencode "text=${PLANO}" > /dev/null
+          fi
+          echo "Notificación enviada."
